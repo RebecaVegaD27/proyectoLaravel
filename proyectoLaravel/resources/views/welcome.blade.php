@@ -74,7 +74,9 @@
             background-color: #f4f4f4;
         }
         .btn-report {
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 0.5rem; /* Ajusta el tamaño del botón */
+            font-size: 0.9rem; /* Reduce el tamaño del texto */
+            width: 40%;
             background-color: #FF6347;
             color: #fff;
             border: none;
@@ -156,9 +158,9 @@
                         <td>REYSAC S.A</td>
                         <td>2024-11-02</td>
                         <td>
-                            <button class="btn-report">
+                        <a href="{{ route('generar.pdf') }}" class="btn-report">
                                 &#128190; Generar Reporte
-                            </button>
+                        </a>
                         </td>
                     </tr>
                     <tr>
@@ -166,9 +168,9 @@
                         <td>PROTEMAXI</td>
                         <td>2024-11-02</td>
                         <td>
-                            <button class="btn-report">
+                        <a href="{{ route('generar.pdf') }}" class="btn-report">
                                 &#128190; Generar Reporte
-                            </button>
+                        </a>
                         </td>
                     </tr>
                     <tr>
@@ -176,9 +178,9 @@
                         <td>MOLINOS CHAMPION</td>
                         <td>2024-11-02</td>
                         <td>
-                            <button class="btn-report">
+                        <a href="{{ route('generar.pdf') }}" class="btn-report">
                                 &#128190; Generar Reporte
-                            </button>
+                        </a>
                         </td>
                     </tr>
                 </tbody>
