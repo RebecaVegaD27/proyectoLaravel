@@ -8,6 +8,7 @@ use FPDF;
 class PDFController extends Controller
 {
     protected $pdf;
+    
 
     public function index()
     {
@@ -30,6 +31,7 @@ class PDFController extends Controller
                 // Agregar imagen de encabezado en la parte superior de cada página
                 $this->Image(public_path('images/logo_reporte.png'), 10, 10, 190); // Ajusta la ruta y tamaño según necesidad
                 $this->Ln(40);
+                
             }
         };
     }
@@ -38,6 +40,7 @@ class PDFController extends Controller
     {
         // Configuración inicial del PDF
         $datos = $request->all();
+        
 
         if (!isset($datos['cliente'])) {
             return response()->json(['error' => 'Cliente no especificado'], 400);
@@ -47,12 +50,12 @@ class PDFController extends Controller
         // $this->pdf->SetFont('Arial', 'B', 16);
 
         $this->pdf->SetFont('Arial', 'B', 14);
-        $this->pdf->Cell(0, 10, 'INFORME DE GESTION - PROTEMAXI', 0, 1, 'C');
+        $this->pdf->Cell(0, 10, utf8_decode('INFORME DE GESTIÓN - PROTEMAXI'), 0, 1, 'C');
         $this->pdf->Ln(5); // Espacio debajo del encabezado
 
         $this->pdf->SetFont('Arial', 'B', 12);
-        $this->pdf->Cell(0, 10, 'CORRESPONDIENTE AL SERVICIO DE SEGURIDAD FISICA DE', 0, 1, 'C');
-        $this->pdf->Cell(0, 10, 'PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . $datos['cliente'] , 0, 1, 'C');
+        $this->pdf->Cell(0, 10, utf8_decode('CORRESPONDIENTE AL SERVICIO DE SEGURIDAD FÍSICA DE'), 0, 1, 'C');
+        $this->pdf->Cell(0, 10, utf8_decode('PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . $datos['cliente'] ), 0, 1, 'C');
         $this->pdf->Ln(20); // Espacio debajo del encabezado
 
     
@@ -67,33 +70,33 @@ class PDFController extends Controller
         // Crear una tabla simple con bordes solo en el lado derecho
         $this->pdf->Cell(40, $lineHeight, 'CLIENTE:', 0, 0, 'L'); // Reduced width for left cell
         $this->pdf->SetFont('Arial', 'B', 9);
-        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['cliente']), 1, 1, 'L');
 
         $this->pdf->Ln(3); // Add spacing between rows
 
         $this->pdf->Cell(40, $lineHeight, 'DESTINATARIOS:', 0, 0, 'L');
         $this->pdf->SetFont('Arial', 'B', 9);
-        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['cliente']), 1, 1, 'L');
 
         $this->pdf->Ln(3);
 
         $this->pdf->Cell(40, $lineHeight, 'FECHA DE REPORTE:', 0, 0, 'L');
         $this->pdf->SetFont('Arial', 'B', 9);
-        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['fecha_reporte']), 1, 1, 'L');
 
         $this->pdf->Ln(3);
 
         $this->pdf->SetFont('Arial', 'B', 9);
         // ... (similarly for other fields)
 
-        $this->pdf->Cell(30, $lineHeight, 'PERIODO:', 0, 0, 'L');
-        $this->pdf->Cell(30, $lineHeight, $datos['cliente'], 1, 0, 'L'); // Agregamos borde a la derecha
+        $this->pdf->Cell(40, $lineHeight, 'PERIODO:', 0, 0, 'L');
+        $this->pdf->Cell(60, $lineHeight, utf8_decode($datos['cliente']), 1, 0, 'L'); // Agregamos borde a la derecha
         
         // Agregar un espacio en blanco entre las celdas
         $this->pdf->Cell(10, $lineHeight, '', 0, 0, 'L');
         
-        $this->pdf->Cell(30, $lineHeight, 'No DE REPORTE:', 0, 0, 'L');
-        $this->pdf->Cell(30, $lineHeight, $datos['cliente'], 1, 1, 'L');
+        $this->pdf->Cell(30, $lineHeight, 'NO. DE REPORTE:', 0, 0, 'L');
+        $this->pdf->Cell(50, $lineHeight, utf8_decode($datos['cliente']), 1, 1, 'L');
 
 
         // ... (resto del contenido del PDF)
@@ -104,17 +107,19 @@ class PDFController extends Controller
         $this->pdf->Ln();
 
         
-        // Título
-        $this->pdf->Cell(190, 10, 'Mi Primer Reporte', 1, 1, 'C');
+      
         
         // Contenido
-        $this->pdf->SetFont('Arial', '', 12);
-        $this->pdf->Cell(190, 10, 'Este es un reporte de ejemplo', 0, 1, 'L');
-        
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('1. INTRODUCCIÓN'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' . $datos['fecha_reporte'] . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
         // Descargar el PDF
         return response($this->pdf->Output('S'))
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="mi_reporte.pdf"');
+
+        
     }
 
     public function reporteTabla()
