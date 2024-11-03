@@ -191,20 +191,81 @@ class PDFController extends Controller
         
         $this->pdf->SetFont('Arial', '', 8);
          // Procesar los datos de la tabla
-         if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
+        //  if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
+        //     foreach ($datos['tabla'] as $row) {
+        //         if (is_array($row)) {  // Verificar que la fila sea un array
+        //             $this->pdf->SetX($margenOriginal);
+        //             foreach ($w as $index => $width) {
+        //                 $value = isset($row[$index]) ? $row[$index] : '';
+        //                 $this->pdf->Cell($width, 6, utf8_decode($value), 1, 0, 'C');
+        //             }
+        //             $this->pdf->Ln();
+        //         }
+        //     }
+        // }
+
+       // ... (resto de tu código)
+
+    //    if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
+    //     foreach ($datos['tabla'] as $row) {
+    //         if (is_array($row)) {
+    //             $this->pdf->SetX($margenOriginal);
+    
+    //             // Array para almacenar la altura requerida por cada celda en la fila
+    //             $cellHeights = [];
+    
+    //             // Primera pasada: determinar la altura máxima de la fila
+    //             foreach ($w as $index => $width) {
+    //                 $value = isset($row[$index]) ? $row[$index] : '';
+    
+    //                 // Guardar la posición actual
+    //                 $xPos = $this->pdf->GetX();
+    //                 $yPos = $this->pdf->GetY();
+    
+    //                 // Medir el texto con MultiCell y guardar la altura
+    //                 $this->pdf->MultiCell($width, 6, utf8_decode($value), 1, 'C');
+    //                 $cellHeights[] = $this->pdf->GetY() - $yPos;
+    
+    //                 // Volver a la posición original para no mover el cursor
+    //                 $this->pdf->SetXY($xPos + $width, $yPos);
+    //             }
+    
+    //             // Calcular la altura máxima de la fila
+    //             $maxHeight = max($cellHeights);
+    
+    //             // Segunda pasada: dibujar cada celda con la altura máxima
+                
+    //             // Mover a la siguiente línea con la altura máxima
+    //             $this->pdf->Ln($maxHeight);
+    //         }
+    //     }
+    // }
+
+       
+        if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
             foreach ($datos['tabla'] as $row) {
-                if (is_array($row)) {  // Verificar que la fila sea un array
-                    $this->pdf->SetX($margenOriginal);
-                    foreach ($w as $index => $width) {
-                        $value = isset($row[$index]) ? $row[$index] : '';
-                        $this->pdf->Cell($width, 6, utf8_decode($value), 1, 0, 'C');
-                    }
-                    $this->pdf->Ln();
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
                 }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
             }
         }
-
-
         
 
         
@@ -214,7 +275,22 @@ class PDFController extends Controller
             ->header('Content-Disposition', 'attachment; filename="mi_reporte.pdf"');
 
         
+
     }
+
+
+
+  
+function getCellHeight($text, $width) {
+    // Ajusta estos valores según tus necesidades
+    $fontSize = 8; // Tamaño de fuente en puntos
+    $lineHeight = $fontSize * 1.2; // Altura de línea aproximada
+
+    $textWidth = $this->pdf->GetStringWidth($text);
+    $numLines = ceil($textWidth / $width);
+
+    return $numLines * $lineHeight;
+}
 
     public function reporteTabla()
     {
