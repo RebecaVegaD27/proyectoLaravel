@@ -14,9 +14,22 @@ class PDFController extends Controller
     {
         // Definición de los reportes como un array
         $reportes = [
-            ['id' => 1, 'cliente' => 'REYSAC S.A', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '001'],
-            ['id' => 2, 'cliente' => 'PROTEMAXI', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '002'],
-            ['id' => 3, 'cliente' => 'MOLINOS CHAMPION', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '003'],
+            [
+                'id' => 1,
+                'cliente' => 'REYSAC S.A',
+                'fecha_reporte' => '2024-11-02',
+                'no_reporte' => '001',
+                'items' => [
+                    'Primera descripción del sitio o actividad.',
+                    'Segunda descripción del sitio o actividad.',
+                    'Tercera descripción del sitio o actividad.',
+                ],
+                'tabla' => [
+                    ['VIGILANCIA (CONTROL ACCESOS)', '3', '24 H', 'L-D', 'GUAYAQUIL', 'DIURNO', 'GUAYAQUIL'],
+                    ['MONITOREO', '2', '12 H', 'L-V', 'GUAYAQUIL', 'NOCTURNO', 'GUAYAQUIL'],
+                ]
+            ],
+            // ... otros reportes
         ];
 
         return view('welcome', compact('reportes'));
@@ -48,6 +61,8 @@ class PDFController extends Controller
 
         $this->pdf->AddPage();
         // $this->pdf->SetFont('Arial', 'B', 16);
+        $margenOriginal = $this->pdf->GetX();
+  
 
         $this->pdf->SetFont('Arial', 'B', 14);
         $this->pdf->Cell(0, 10, utf8_decode('INFORME DE GESTIÓN - PROTEMAXI'), 0, 1, 'C');
@@ -111,10 +126,89 @@ class PDFController extends Controller
         
         // Contenido
         $this->pdf->SetFont('Arial', 'B', 11);
-        $this->pdf->Cell(190, 10, utf8_decode('1. INTRODUCCIÓN'), 0, 1, 'L');
+        $this->pdf->Cell(190, 10, utf8_decode('1.	INTRODUCCIÓN'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' . $datos['fecha_reporte'] . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
         // Descargar el PDF
+        $this->pdf->SetLeftMargin(20);
+       
+        // Lista numerada dinámica desde el array $datos['items']
+        if (isset($datos['items']) && is_array($datos['items'])) {
+        $counter = 1;
+        foreach ($datos['items'] as $item) {
+            $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+            $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . '. ' . $item), 0, 'L');
+            $counter++;
+        }
+        }
+
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal); // Utiliza SetX() para una mayor precisión
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Este informe tiene como objetivo proporcionar un resumen detallado de las actividades realizadas, incidencias, y mejoras implementadas durante el periodo.'), 0, 'J');        
+        $this->pdf->Ln();
+
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('2.	RESÚMEN DE ACTIVIDADES'), 0, 1, 'L');
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->Cell(190, 10, utf8_decode('2.1.	COBERTURA DEL SERVICIO'), 0, 1, 'L');
+        $this->pdf->SetX($margenOriginal);
+
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad se mantuvo cubierto en todos los sitios durante el periodo, con un total de '. $datos['cliente'].' puestos de servicio para asegurar una vigilancia constante en las áreas asignadas, de acuerdo a la siguiente tabla:'), 0, 'J');        
+
+
+        #tabla 1
+
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+        // Fuente y tamaño
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+        // Cabecera de la tabla
+        $header = array('SITIO', 'SERVICIO', '24H', '12H', 'TURNO', 'DIAS', 'CIUDAD');
+        $w = array(40, 50, 15, 15, 20, 20, 30);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+       
+
+        // Contenido de la tabla
+        
+        $this->pdf->SetFont('Arial', '', 8);
+         // Procesar los datos de la tabla
+         if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
+            foreach ($datos['tabla'] as $row) {
+                if (is_array($row)) {  // Verificar que la fila sea un array
+                    $this->pdf->SetX($margenOriginal);
+                    foreach ($w as $index => $width) {
+                        $value = isset($row[$index]) ? $row[$index] : '';
+                        $this->pdf->Cell($width, 6, utf8_decode($value), 1, 0, 'C');
+                    }
+                    $this->pdf->Ln();
+                }
+            }
+        }
+
+
+        
+
+        
+
         return response($this->pdf->Output('S'))
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="mi_reporte.pdf"');
