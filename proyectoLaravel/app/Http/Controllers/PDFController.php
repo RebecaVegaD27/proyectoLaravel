@@ -54,6 +54,55 @@ class PDFController extends Controller
         $this->pdf->Cell(0, 10, 'CORRESPONDIENTE AL SERVICIO DE SEGURIDAD FISICA DE', 0, 1, 'C');
         $this->pdf->Cell(0, 10, 'PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . $datos['cliente'] , 0, 1, 'C');
         $this->pdf->Ln(20); // Espacio debajo del encabezado
+
+    
+
+        // Configuración de la fuente y márgenes
+        $this->pdf->SetFont('Arial', '', 9);
+        $lineHeight = 5;
+        $this->pdf->SetMargins(10, 10, 10);
+
+        $this->pdf->SetFont('Arial', 'B', 9);
+
+        // Crear una tabla simple con bordes solo en el lado derecho
+        $this->pdf->Cell(40, $lineHeight, 'CLIENTE:', 0, 0, 'L'); // Reduced width for left cell
+        $this->pdf->SetFont('Arial', 'B', 9);
+        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+
+        $this->pdf->Ln(3); // Add spacing between rows
+
+        $this->pdf->Cell(40, $lineHeight, 'DESTINATARIOS:', 0, 0, 'L');
+        $this->pdf->SetFont('Arial', 'B', 9);
+        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+
+        $this->pdf->Ln(3);
+
+        $this->pdf->Cell(40, $lineHeight, 'FECHA DE REPORTE:', 0, 0, 'L');
+        $this->pdf->SetFont('Arial', 'B', 9);
+        $this->pdf->Cell(0, $lineHeight, $datos['cliente'], 1, 1, 'L');
+
+        $this->pdf->Ln(3);
+
+        $this->pdf->SetFont('Arial', 'B', 9);
+        // ... (similarly for other fields)
+
+        $this->pdf->Cell(30, $lineHeight, 'PERIODO:', 0, 0, 'L');
+        $this->pdf->Cell(30, $lineHeight, $datos['cliente'], 1, 0, 'L'); // Agregamos borde a la derecha
+        
+        // Agregar un espacio en blanco entre las celdas
+        $this->pdf->Cell(10, $lineHeight, '', 0, 0, 'L');
+        
+        $this->pdf->Cell(30, $lineHeight, 'No DE REPORTE:', 0, 0, 'L');
+        $this->pdf->Cell(30, $lineHeight, $datos['cliente'], 1, 1, 'L');
+
+
+        // ... (resto del contenido del PDF)
+
+        // ... (otros campos que desees agregar)
+
+        // Salto de línea
+        $this->pdf->Ln();
+
         
         // Título
         $this->pdf->Cell(190, 10, 'Mi Primer Reporte', 1, 1, 'C');
