@@ -12,3 +12,9 @@ Route::get('/', function () {
 Route::get('/generar-pdf', [PDFController::class, 'generarPDF'])->name('generar.pdf');
 Route::get('/reporte-tabla', [PDFController::class, 'reporteTabla'])->name('reporte.tabla');
 Route::get('/reporte-con-imagen', [PDFController::class, 'reporteConImagen'])->name('reporte.con_imagen');
+
+// routes/web.php
+use App\Http\Controllers\Controller;
+
+Route::get('/', [PDFController::class, 'index'])->name('reportes.index');
+

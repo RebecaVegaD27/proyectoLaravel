@@ -9,17 +9,51 @@ class PDFController extends Controller
 {
     protected $pdf;
 
-    public function __construct()
+    public function index()
     {
-        // Crear instancia de FPDF
-        $this->pdf = new FPDF();
+        // Definición de los reportes como un array
+        $reportes = [
+            ['id' => 1, 'cliente' => 'REYSAC S.A', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '001'],
+            ['id' => 2, 'cliente' => 'PROTEMAXI', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '002'],
+            ['id' => 3, 'cliente' => 'MOLINOS CHAMPION', 'fecha_reporte' => '2024-11-02', 'no_reporte' => '003'],
+        ];
+
+        return view('welcome', compact('reportes'));
     }
 
-    public function generarPDF()
+    public function __construct()
+    {
+        // Crear instancia de FPDF extendida para incluir encabezado
+        $this->pdf = new class extends FPDF {
+            function Header()
+            {
+                // Agregar imagen de encabezado en la parte superior de cada página
+                $this->Image(public_path('images/logo_reporte.png'), 10, 10, 190); // Ajusta la ruta y tamaño según necesidad
+                $this->Ln(40);
+            }
+        };
+    }
+
+    public function generarPDF(Request $request)
     {
         // Configuración inicial del PDF
+        $datos = $request->all();
+
+        if (!isset($datos['cliente'])) {
+            return response()->json(['error' => 'Cliente no especificado'], 400);
+        }
+
         $this->pdf->AddPage();
-        $this->pdf->SetFont('Arial', 'B', 16);
+        // $this->pdf->SetFont('Arial', 'B', 16);
+
+        $this->pdf->SetFont('Arial', 'B', 14);
+        $this->pdf->Cell(0, 10, 'INFORME DE GESTION - PROTEMAXI', 0, 1, 'C');
+        $this->pdf->Ln(5); // Espacio debajo del encabezado
+
+        $this->pdf->SetFont('Arial', 'B', 12);
+        $this->pdf->Cell(0, 10, 'CORRESPONDIENTE AL SERVICIO DE SEGURIDAD FISICA DE', 0, 1, 'C');
+        $this->pdf->Cell(0, 10, 'PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . $datos['cliente'] , 0, 1, 'C');
+        $this->pdf->Ln(20); // Espacio debajo del encabezado
         
         // Título
         $this->pdf->Cell(190, 10, 'Mi Primer Reporte', 1, 1, 'C');
@@ -68,9 +102,7 @@ class PDFController extends Controller
     {
         $this->pdf->AddPage();
         
-        // Agregar imagen (asegúrate de que la ruta sea correcta)
-        $this->pdf->Image(public_path('logo.png'), 10, 10, 50);
-        
+        // Configuración del contenido del reporte
         $this->pdf->SetFont('Arial', 'B', 16);
         $this->pdf->Cell(190, 10, 'Reporte con Imagen', 0, 1, 'C');
         

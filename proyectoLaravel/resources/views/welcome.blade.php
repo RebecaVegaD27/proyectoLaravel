@@ -1,4 +1,3 @@
-<!-- resources/views/layouts/app.blade.php -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,7 +6,6 @@
     <title>@yield('title', 'Panel de Control')</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <style>
-        /* Estilos para la página */
         body {
             font-family: Arial, sans-serif;
             background-color: #f3f4f6;
@@ -17,7 +15,7 @@
         .navbar {
             display: flex;
             align-items: center;
-            background-color: #FF6347; /* Cambiado a un tono de rojo */
+            background-color: #FF6347;
             padding: 1rem;
             color: #fff;
         }
@@ -27,7 +25,7 @@
             margin-right: auto;
         }
         .navbar .logo img {
-            height: 40px; /* Ajusta la altura del logo según sea necesario */
+            height: 40px;
             margin-right: 10px;
         }
         .content {
@@ -43,17 +41,9 @@
             padding: 0.5rem;
             width: 300px;
             border: 1px solid #ccc;
-            border-radius: 4px; /* Bordes redondeados */
-            outline: none;
-            margin-right: 0.5rem; /* Espacio entre los inputs */
-        }
-        .search-container button {
-            padding: 0.5rem;
-            background-color: #FF6347;
-            color: #fff;
-            border: none;
             border-radius: 4px;
-            cursor: pointer;
+            outline: none;
+            margin-right: 0.5rem;
         }
         .table-container {
             margin-top: 1.5rem;
@@ -74,8 +64,8 @@
             background-color: #f4f4f4;
         }
         .btn-report {
-            padding: 0.25rem 0.5rem; /* Ajusta el tamaño del botón */
-            font-size: 0.9rem; /* Reduce el tamaño del texto */
+            padding: 0.25rem 0.5rem;
+            font-size: 0.9rem;
             width: 40%;
             background-color: #FF6347;
             color: #fff;
@@ -89,15 +79,13 @@
     </style>
     <script>
         function buscarPorCliente() {
-            // Obtiene el valor de búsqueda y lo convierte a minúsculas
             const input = document.querySelector('.search-container input[type="text"]');
             const filter = input.value.toLowerCase();
             const table = document.querySelector('table');
             const tr = table.getElementsByTagName('tr');
 
-            // Recorre todas las filas de la tabla y oculta las que no coinciden con la búsqueda
-            for (let i = 1; i < tr.length; i++) { // Empieza desde 1 para evitar el encabezado
-                const tdCliente = tr[i].getElementsByTagName('td')[1]; // Columna "Cliente"
+            for (let i = 1; i < tr.length; i++) {
+                const tdCliente = tr[i].getElementsByTagName('td')[1];
                 if (tdCliente) {
                     const textValue = tdCliente.textContent || tdCliente.innerText;
                     tr[i].style.display = textValue.toLowerCase().includes(filter) ? "" : "none";
@@ -106,15 +94,13 @@
         }
 
         function buscarPorFecha() {
-            // Obtiene la fecha seleccionada
             const inputFecha = document.querySelector('.search-container input[type="date"]');
             const fechaSeleccionada = inputFecha.value;
             const table = document.querySelector('table');
             const tr = table.getElementsByTagName('tr');
 
-            // Recorre todas las filas de la tabla y oculta las que no coinciden con la fecha seleccionada
-            for (let i = 1; i < tr.length; i++) { // Empieza desde 1 para evitar el encabezado
-                const tdFecha = tr[i].getElementsByTagName('td')[2]; // Columna "Fecha de Reporte"
+            for (let i = 1; i < tr.length; i++) {
+                const tdFecha = tr[i].getElementsByTagName('td')[2];
                 if (tdFecha) {
                     const fechaValue = tdFecha.textContent || tdFecha.innerText;
                     tr[i].style.display = fechaValue === fechaSeleccionada || fechaSeleccionada === "" ? "" : "none";
@@ -126,21 +112,18 @@
 <body>
     <div class="navbar">
         <div class="logo">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo"> <!-- Imagen del logo -->
+            <img src="{{ asset('images/logo.png') }}" alt="Logo">
         </div>
     </div>
 
     <div class="content">
         <h2>Módulo de Reportería</h2>
 
-        <!-- Contenedor de búsqueda debajo de "Reportería" -->
         <div class="search-container">
             <input type="text" placeholder="Buscar Cliente..." onkeyup="buscarPorCliente()">
             <input type="date" placeholder="Buscar por Fecha" onchange="buscarPorFecha()">
-            
         </div>
 
-        <!-- Tabla de datos -->
         <div class="table-container">
             <table>
                 <thead>
@@ -152,37 +135,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Simulando datos de ejemplo -->
-                    <tr>
-                        <td>1</td>
-                        <td>REYSAC S.A</td>
-                        <td>2024-11-02</td>
-                        <td>
-                        <a href="{{ route('generar.pdf') }}" class="btn-report">
-                                &#128190; Generar Reporte
-                        </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>PROTEMAXI</td>
-                        <td>2024-11-02</td>
-                        <td>
-                        <a href="{{ route('generar.pdf') }}" class="btn-report">
-                                &#128190; Generar Reporte
-                        </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>MOLINOS CHAMPION</td>
-                        <td>2024-11-02</td>
-                        <td>
-                        <a href="{{ route('generar.pdf') }}" class="btn-report">
-                                &#128190; Generar Reporte
-                        </a>
-                        </td>
-                    </tr>
+                    @foreach($reportes as $reporte)
+                        <tr>
+                            <td>{{ $reporte['id'] }}</td>
+                            <td>{{ $reporte['cliente'] }}</td>
+                            <td>{{ $reporte['fecha_reporte'] }}</td>
+                            <td>
+                            <a href="{{ route('generar.pdf', ['cliente' => $reporte['cliente'], 'id' => $reporte['id']]) }}" class="btn-report">
+                                    &#128190; Generar Reporte
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
