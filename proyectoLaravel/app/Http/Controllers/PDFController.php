@@ -62,6 +62,8 @@ class PDFController extends Controller
         ['GRANJA SAN CARLOS', 1, 1, 4, 5]],
 
         'tabla6' => [[ 1,'CASTRO SILVA', 'LOMAS', '2023-12-04', '2023-12-05'],
+    ],
+    'tabla7' => [[ 1, 'LOMAS', '2023-12-04', 'No se proporcionó alimentación a guardia en el sitio, en una hora adecuada.  El supervisor arribó a las 11H40 al sitio cuando el personal ya se disponía a almorzar.', 'Concienciar al personal asignado la prioridad en la  entrega de alimentación, cuando amerite.'],
         ]
 
 
@@ -789,6 +791,147 @@ class PDFController extends Controller
         $this->pdf->SetX($margenOriginal);
         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('En este punto se detallan las solicitudes de acción correctiva (SAC´s) reportadas por el cliente:'), 0, 'J');
        
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array(
+        'NO.',
+        'SITIO',
+        'FECHA DEL INCIDENTE',
+        'INCIDENTE',
+        'MEDIDA DE CONTROL');
+        $w = array(20,  30, 30, 50, 50);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla7']) && is_array($datos['tabla7'])) {
+            foreach ($datos['tabla7'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+
+        // Contenido
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('5.	VALORES AGREGADOS'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $datos['cliente'] . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
+        
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+
+        // Contenido
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('6.	CONCLUSIONES Y RECOMENDACIONES'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $datos['cliente'] . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
+
+
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array(
+        'ELABORADO POR:',
+        'REVISADO POR:',
+        'REPORTADO A:');
+        $w = array(63,  63, 63);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+
+     
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+     
+        $this->pdf->SetFont('Arial', '', 8);
+                // Restaurar color
+        $this->pdf->SetFillColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+         // Pie de tabla
+         $this->pdf->Cell(63, 10, '', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+         $this->pdf->Cell(63, 10, '', 1, 0, 'C', true); // Celda vacía para la columna 5
+         $this->pdf->Cell(63, 10, '', 1, 0, 'C', true); // Celda vacía para la columna 6
+ 
+
+         $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+
+        // Pie de tabla
+        $this->pdf->Cell(63, 5, 'Jefe de Operaciones', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(63, 5, 'Administrador del Contrato', 1, 0, 'C', true); // Celda vacía para la columna 5
+        $this->pdf->Cell(63, 5, utf8_decode('Jefe de Seguridad Física'), 1, 0, 'C', true); // Celda vacía para la columna 6
+
+        
+
+        $this->pdf->Ln(); // Salto de línea para el pie de tabla
+        $this->pdf->SetX($margenOriginal);
+
+         // Pie de tabla
+         $this->pdf->Cell(63, 5, 'PROTEMAXI C. LTDA', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+         $this->pdf->Cell(63, 5, 'PROTEMAXI C. LTDA', 1, 0, 'C', true); // Celda vacía para la columna 5
+         $this->pdf->Cell(63, 5, 'MOCHASA S.A.', 1, 0, 'C', true); // Celda vacía para la columna 6
+        $this->pdf->SetX($margenOriginal);
+
+
         return response($this->pdf->Output('S'))
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="mi_reporte.pdf"');

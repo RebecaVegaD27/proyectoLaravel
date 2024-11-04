@@ -145,7 +145,7 @@
                             'items'=> $reporte['items'], 'tabla'=> $reporte['tabla'], 
                             'tabla2'=> $reporte['tabla2'], 'tabla3'=> $reporte['tabla3'] , 
                             'tabla4'=> $reporte['tabla4'], 'tabla5' => $reporte['tabla5'] ,
-                             'tabla6'=> $reporte['tabla6'] ]) }}" class="btn-report">
+                             'tabla6'=> $reporte['tabla6'], 'tabla7'=> $reporte['tabla7'] ]) }}" class="btn-report">
                                     &#128190; Generar Reporte
                                 </a>
                             </td>
