@@ -142,7 +142,8 @@
                             <td>{{ $reporte['fecha_reporte'] }}</td>
                             <td>
                             <a href="{{ route('generar.pdf', ['cliente' => $reporte['cliente'], 'id' => $reporte['id'], 'fecha_reporte'=> $reporte['fecha_reporte'], 
-                            'items'=> $reporte['items'], 'tabla'=> $reporte['tabla'], 
+                            'items'=> $reporte['items'], 'items2'=> $reporte['items2'], 
+                            'tabla'=> $reporte['tabla'], 
                             'tabla2'=> $reporte['tabla2'], 'tabla3'=> $reporte['tabla3'] , 
                             'tabla4'=> $reporte['tabla4'], 'tabla5' => $reporte['tabla5'] ,
                              'tabla6'=> $reporte['tabla6'], 'tabla7'=> $reporte['tabla7'] ]) }}" class="btn-report">

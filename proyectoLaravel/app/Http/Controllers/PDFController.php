@@ -13,6 +13,7 @@ class PDFController extends Controller
     public function index()
     {
         // Definición de los reportes como un array
+        
         $reportes = [
             [
                 'id' => 1,
@@ -24,6 +25,9 @@ class PDFController extends Controller
                     'Primera descripción del sitio o actividad.',
                     'Segunda descripción del sitio o actividad.',
                     'Tercera descripción del sitio o actividad.',
+                ],
+                'items2' => [
+                    'El día 21/08/2024 se realizó 1 prueba poligráfica al señor VINICIO VLADIMIR TUFIÑO TORO, chofer de la empresa RANSECORP.',
                 ],
                 'tabla' => [
                     ['VIGILANCIA', '3', '24', '1', 'GUAYAQUIL', 'DIURNO', 'GUAYAQUIL'],
@@ -86,7 +90,22 @@ class PDFController extends Controller
                 $this->Ln(40);
                 
             }
+
+            function Footer()
+            {
+                // Establece la posición del pie de página a 1.5 cm del borde inferior
+                $this->SetY(-15);
+
+                // Agregar una imagen en el pie de página alineada a la izquierda
+                $this->Image(public_path('images/footer_imagen.png'), 10, $this->GetY(), 80); // Ajusta el tamaño a 20 de ancho
+                 // Ajusta la ruta y tamaño según necesidad
+
+                // Configurar fuente y agregar número de página alineado a la derecha
+                $this->SetFont('Arial', 'I', 8);
+                $this->Cell(0, 10, utf8_decode('pág. ' . $this->PageNo() . '/{nb}'), 0, 0, 'R');
+            }
         };
+        $this->pdf->AliasNbPages();
     }
 
     public function generarPDF(Request $request)
@@ -860,7 +879,17 @@ class PDFController extends Controller
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $datos['cliente'] . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
-        
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+        if (isset($datos['items2']) && is_array($datos['items2'])) {
+            $counter = 1;
+            foreach ($datos['items2'] as $item) {
+                $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+                $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . ') ' . $item), 0, 'L');
+                $counter++;
+            }
+            }
+
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
 
