@@ -19,16 +19,54 @@ class PDFController extends Controller
                 'cliente' => 'REYSAC S.A',
                 'fecha_reporte' => '2024-11-02',
                 'no_reporte' => '001',
+                
                 'items' => [
                     'Primera descripción del sitio o actividad.',
                     'Segunda descripción del sitio o actividad.',
                     'Tercera descripción del sitio o actividad.',
                 ],
                 'tabla' => [
-                    ['VIGILANCIA (CONTROL ACCESOS)', '3', '24 H', 'L-D', 'GUAYAQUIL', 'DIURNO', 'GUAYAQUIL'],
-                    ['MONITOREO', '2', '12 H', 'L-V', 'GUAYAQUIL', 'NOCTURNO', 'GUAYAQUIL'],
-                ]
+                    ['VIGILANCIA', '3', '24', '1', 'GUAYAQUIL', 'DIURNO', 'GUAYAQUIL'],
+                    ['MONITOREO', '2', '12', '2', 'GUAYAQUIL', 'NOCTURNO', 'GUAYAQUIL'],
+                ],
+                'tabla2' => [  // Nueva clave añadida
+                    
+                    ['PLANTA GYE', 211, 1476],
+                    ['GRANJA BUCAY', 151, 454],
+                    ['GRANJA LOMAS', 185, 1482],
+                    ['GRANJA SAN CARLOS', 40, 316]
+                ],
+                'tabla3' => [  // Segunda clave añadida
+            ['PLANTA GYE', 176, 448, 1333, 9, 1566],
+            ['GRANJA BUCAY', 510, 8, 43, 15, 576],
+            ['GRANJA LOMAS', 307, 2, 191, 12, 512],
+            ['GRANJA SAN CARLOS', 577, 10, 103, 6, 696]
+            
+                ],
+
+                'tabla4' => [  // Tercera clave añadida
+            [1, '31/7/24', 693, 'LOMAS DE SARGENTILLO', 'SANTO DOMINGO', 'JOFFRE MONCERRATE - JUAN GUZMAN', '2 CONTENEDORES', 'UBA-3340 - UAA-3266'],
+            [2, '1/8/24', 696, 'LOMAS DE SARGENTILLO', 'PALLATANGA', 'CARLOS SUAREZ - JUAN CARLOS GONZALEZ', '2 CONTENEDORES', 'UBA-3340 - UAA-3266'],
+            [3, '4/8/24', 698, 'SAN CARLOS', 'CAMAL GUAYAQUIL', 'MONCERRATE JOFFRE - JAIME QUIÑONEZ', '2 CONTENEDORES', 'GSD-6924 - UBA-3340'],
+            [4, '5/8/24', 699, 'SAN CARLOS', 'CERECITA', 'MONCERRATE JOFFRE - JAIME QUIÑONEZ', '2 CONTENEDORES', 'ADA-6353 - UBA-3340'],
+            [5, '5/8/24', 700, 'LOMAS DE SARGENTILLO', 'CUENCA', 'MONCERRATE JOFFRE - JOSE VERA', '2 CONTENEDORES', 'ABA-6343 - UBA-3340'],
+            [6, '6/8/24', 705, 'SAN CARLOS', 'CERECITA', 'JEAN GONZALEZ - LUIS ANDRADE', '1 CONTENEDOR', 'UBA-3340'],
+            [7, '7/8/24', 701, 'SAN CARLOS', 'CERECITA', 'MONCERRATE JOFFRE - FRANKLIN MACIAS', '2 CONTENEDORES', 'UBA-3340 - UAA-3268'],
+            [8, '8/8/24', 702, 'LOMAS DE SARGENTILLO', 'PALLATANGA', 'MONCERRATE JOFFRE - SAAVEDRA ERICK', '2 CONTENEDORES', 'UBA-3340 - BAA-1414'],
+            [9, '11/8/24', 707, 'SAN CARLOS', 'CAMAL GUAYAQUIL', 'MONCERRATE JOFFRE - SAAVEDRA ERICK', '2 CONTENEDORES', 'GSO-6924 - UBA-3340'],
+            [10, '12/8/24', 708, 'SAN CARLOS', 'CERECITA', 'MONCERRATE JOFFRE - ANTONY SANCHEZ', '2 CONTENEDORES', 'BAA-1414']
+        ],
+        'tabla5' => [['PLANTA GYE', 1, 1, 2, 2],
+        ['GRANJA BUCAY', 1, 1, 0, 2],
+        ['GRANJA LOMAS', 1, 1, 7, 9],
+        ['GRANJA SAN CARLOS', 1, 1, 4, 5]],
+
+        'tabla6' => [[ 1,'CASTRO SILVA', 'LOMAS', '2023-12-04', '2023-12-05'],
+        ]
+
+
             ],
+
             // ... otros reportes
         ];
 
@@ -267,9 +305,490 @@ class PDFController extends Controller
             }
         }
         
+        // Antes de retornar el PDF, después de generar el contenido de la tabla
+        $this->pdf->Ln(); // Salto de línea para el pie de tabla
+        $this->pdf->SetX($margenOriginal);
 
+        // Sumar las columnas 3 y 4
+        $sumaCol3 = 0;
+        $sumaCol4 = 0;
+
+        foreach ($datos['tabla'] as $row) {
+            if (isset($row[2])) {
+                $sumaCol3 += (int)$row[2]; // Columna 3
+            }
+            if (isset($row[3])) {
+                $sumaCol4 += (int)$row[3]; // Columna 4
+            }
+        }
+
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+
+        // Pie de tabla
+        $this->pdf->Cell(90, 5, 'TOTAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(15, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
+        $this->pdf->Cell(15, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
+        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 5
+        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 6
+        $this->pdf->Cell(30, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
         
 
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->Ln(); // Salto de línea para el pie de tabla
+        $this->pdf->SetX($margenOriginal);
+
+
+         // Contenido
+         $this->pdf->SetFont('Arial', 'B', 11);
+         $this->pdf->Cell(190, 10, utf8_decode('2.2.	RONDAS DE VIGILANCIA:'), 0, 1, 'L');
+ 
+         $this->pdf->SetX($margenOriginal);
+         $this->pdf->SetFont('Arial', '', 9);
+         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se realizaron un total de '. $datos['cliente'] . ' rondas de vigilancia y ' . $datos['cliente'] . '  marcaciones QR, distribuidas entre los diferentes puntos de servicio. Estas rondas se llevaron a cabo en horarios aleatorios para maximizar la efectividad y minimizar los riesgos de incidentes.'), 0, 'J');        
+
+         $this->pdf->Ln();
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array('SITIO', 'NO. DE RONDAS', 'NO. DE MARCACIONES');
+        $w = array(40, 30, 40);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla2']) && is_array($datos['tabla2'])) {
+            foreach ($datos['tabla2'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+      
+        $this->pdf->SetX($margenOriginal);
+
+        // Sumar las columnas 3 y 4
+        $sumaCol3 = 0;
+        $sumaCol4 = 0;
+
+        foreach ($datos['tabla2'] as $row) {
+            if (isset($row[1])) {
+                $sumaCol3 += (int)$row[1]; // Columna 3
+            }
+            if (isset($row[2])) {
+                $sumaCol4 += (int)$row[2]; // Columna 4
+            }
+        }
+
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+
+        // Pie de tabla
+        $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(30, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
+        $this->pdf->Cell(40, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
+
+
+        #------------------TABLA 3 -------------------------
+
+
+        // Contenido
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('2.3.	CONTROL DE ACCESOS:'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se gestionaron un total de ' . $datos['cliente'] . ' registros de control de accesos de empleados, visitantes, proveedores, y clientes, en las distintas instalaciones ingresados en nuestro sistema PROTEAPP®.  El proceso de control incluyó la verificación de identidades y la inspección de vehículos conforme a los procedimientos establecidos, garantizando el cumplimiento de las políticas de seguridad de ' . $datos['cliente'] . ' .'), 0, 'J');
+
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array('SITIO', 'EMPLEADOS', 'VISITANTES', 'PROVEEDORES', 'CLIENTES', 'TOTAL');
+        $w = array(40, 30, 30, 30, 30, 30);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla3']) && is_array($datos['tabla3'])) {
+            foreach ($datos['tabla3'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+      
+        $this->pdf->SetX($margenOriginal);
+
+        // Sumar las columnas 3 y 4
+        $sumaCol3 = 0;
+        $sumaCol4 = 0;
+        $sumaCol5 = 0;
+        $sumaCol6 = 0;
+        $sumaCol7 = 0;
+
+        foreach ($datos['tabla3'] as $row) {
+            if (isset($row[1])) {
+                $sumaCol3 += (int)$row[1]; // Columna 3
+            }
+            if (isset($row[2])) {
+                $sumaCol4 += (int)$row[2]; // Columna 4
+            }
+            if (isset($row[3])) {
+                $sumaCol5 += (int)$row[3]; // Columna 4
+            }
+            if (isset($row[4])) {
+                $sumaCol6 += (int)$row[4]; // Columna 4
+            }
+
+            if (isset($row[5])) {
+                $sumaCol7 += (int)$row[5]; // Columna 4
+            }
+
+            
+        }
+
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+
+        // Pie de tabla
+        $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(30, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
+        $this->pdf->Cell(30, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
+        $this->pdf->Cell(30, 5, $sumaCol5, 1, 0, 'C', true); // Suma de la columna 4
+        $this->pdf->Cell(30, 5, $sumaCol6, 1, 0, 'C', true); // Suma de la columna 4
+        $this->pdf->Cell(30, 5, $sumaCol7, 1, 0, 'C', true); // Suma de la columna 4
+
+
+        #-------------Tabla 4 ------------------
+
+        // Contenido
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('2.4.	REPORTE DE CUSTODIAS '), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de agosto se realizaron un total de ' . $datos['cliente'] .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
+        
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array( 'NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO DE LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
+        $w = array(15, 20, 20, 30, 20, 40, 20,30);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla4']) && is_array($datos['tabla4'])) {
+            foreach ($datos['tabla4'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+      
+        $this->pdf->SetX($margenOriginal);
+
+        // Contenido
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('3.	NOVEDADES E INCIDENTES DURANTE EL PERIODO'), 0, 1, 'L');
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->Cell(190, 10, utf8_decode('3.1.	INCIDENTES DE SEGURIDAD'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A continuación, se detallan las incidencias de seguridad reportadas en el presente periodo:'), 0, 'J');
+      
+        
+
+        // Recorrer los sitios y sus incidentes
+        #----------- Tabla 5 --------------------------
+
+
+        // Contenido
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('3.2.	NOVEDADES REPORTADAS EN PROTEAPP® '), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A lo largo de este período, se han identificado y reportado en nuestro sistema PROTEAPP® '. $datos['cliente'] . ' novedades relevantes en todos los sitios, que destacan la importancia de nuestra gestión de vigilancia y seguridad, las cuales se resumen a continuación:'), 0, 'J');
+
+        
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array('SITIO',
+        'INCIDENTES',
+        'HALLAZGOS',
+        'NOVEDADES DEL SITIO',
+        'TOTAL NOVEDADES REPORTADAS EN PROTEAPP');
+        $w = array(40, 20, 20, 50, 50);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla5']) && is_array($datos['tabla5'])) {
+            foreach ($datos['tabla5'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+    
+        $this->pdf->SetX($margenOriginal);
+
+        // Sumar las columnas 3 y 4
+        $sumaCol = 0;
+
+
+        foreach ($datos['tabla5'] as $row) {
+            if (isset($row[4])) {
+                $sumaCol += (int)$row[4]; // Columna 3
+            }
+        }
+
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+
+        // Pie de tabla
+        $this->pdf->Cell(40, 5, 'TOTAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 5
+        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 6
+        $this->pdf->Cell(50, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
+        $this->pdf->Cell(50, 5, $sumaCol, 1, 0, 'C', true); // Celda vacía para la columna 7
+        
+
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->Ln(); // Salto de línea para el pie de tabla
+        $this->pdf->SetX($margenOriginal);
+
+        #----------- Tabla 6 --------------------------
+        // Contenido
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('3.3.	CAMBIOS EN LA NOMINA DEL PERSONAL'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('En el siguiente cuadro se presenta el listado del personal que salió del proyecto en el periodo:'), 0, 'J');
+       
+        $this->pdf->Ln( );
+        $this->pdf->SetX($margenOriginal);
+
+
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array(
+        'NO.',
+        'APELLIDOS NOMBRES',
+        'PUESTO',
+        'FECHA DE INGRESO',
+        'FECHA DE  SALIDA');
+        $w = array(20,  60, 40, 30, 30);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+        $this->pdf->Ln();
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+
+        if (!empty($datos['tabla6']) && is_array($datos['tabla6'])) {
+            foreach ($datos['tabla6'] as $row) {
+                $this->pdf->SetX($margenOriginal);
+        
+                // Calcular alturas de las celdas
+                $cellHeights = [];
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $cellHeights[] = $this->getCellHeight($value, $width);
+                }
+        
+                // Obtener la altura máxima para la fila
+                $maxHeight = max($cellHeights);
+        
+                // Dibujar las celdas con la altura máxima
+                foreach ($w as $index => $width) {
+                    $value = isset($row[$index]) ? $row[$index] : '';
+                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                }
+        
+                // Mover a la siguiente línea
+                $this->pdf->Ln($maxHeight);
+            }
+        }
+
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
+
+        // Contenido
+        $this->pdf->SetFont('Arial', 'B', 11);
+        $this->pdf->Cell(190, 10, utf8_decode('4.	ACCIONES CORRECTIVAS REPORTADAS POR EL CLIENTE'), 0, 1, 'L');
+        $this->pdf->SetFont('Arial', '', 9);
+        $this->pdf->SetX($margenOriginal);
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('En este punto se detallan las solicitudes de acción correctiva (SAC´s) reportadas por el cliente:'), 0, 'J');
+       
         return response($this->pdf->Output('S'))
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="mi_reporte.pdf"');
@@ -292,46 +811,5 @@ function getCellHeight($text, $width) {
     return $numLines * $lineHeight;
 }
 
-    public function reporteTabla()
-    {
-        // Agregar página
-        $this->pdf->AddPage();
-        
-        // Título
-        $this->pdf->SetFont('Arial', 'B', 16);
-        $this->pdf->Cell(190, 10, 'Reporte con Tabla', 1, 1, 'C');
-        
-        // Encabezados de la tabla
-        $this->pdf->SetFont('Arial', 'B', 12);
-        $this->pdf->Cell(40, 10, 'ID', 1);
-        $this->pdf->Cell(75, 10, 'Nombre', 1);
-        $this->pdf->Cell(75, 10, 'Email', 1);
-        $this->pdf->Ln();
-        
-        // Datos de ejemplo
-        $this->pdf->SetFont('Arial', '', 12);
-        for($i = 1; $i <= 10; $i++) {
-            $this->pdf->Cell(40, 10, $i, 1);
-            $this->pdf->Cell(75, 10, "Usuario " . $i, 1);
-            $this->pdf->Cell(75, 10, "usuario{$i}@email.com", 1);
-            $this->pdf->Ln();
-        }
-        
-        return response($this->pdf->Output('S'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="reporte_tabla.pdf"');
-    }
-
-    public function reporteConImagen()
-    {
-        $this->pdf->AddPage();
-        
-        // Configuración del contenido del reporte
-        $this->pdf->SetFont('Arial', 'B', 16);
-        $this->pdf->Cell(190, 10, 'Reporte con Imagen', 0, 1, 'C');
-        
-        return response($this->pdf->Output('S'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="reporte_imagen.pdf"');
-    }
+  
 }
