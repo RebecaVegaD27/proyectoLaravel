@@ -18,3 +18,5 @@ use App\Http\Controllers\Controller;
 
 Route::get('/', [PDFController::class, 'index'])->name('reportes.index');
 
+Route::get('/detalles', [PDFController::class, 'detalles']);
+

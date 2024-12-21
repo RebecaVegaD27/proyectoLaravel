@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detalles', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
             $table->date('fecha_novedad');
             $table->date('fecha_reporte');
             $table->string('desc_codigo');

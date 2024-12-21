@@ -107,6 +107,15 @@
                 }
             }
         }
+
+        fetch('/detalles')
+    .then(response => response.json())  // Convierte la respuesta a formato JSON
+    .then(data => {
+        console.log("aquiiiii", data);  // Aquí recibes los datos de la base de datos
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
     </script>
 </head>
 <body>

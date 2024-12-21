@@ -2,12 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Detalle;
 use Illuminate\Http\Request;
 use FPDF;
 
 class PDFController extends Controller
 {
     protected $pdf;
+
+    public function detalles()
+    {
+        // Lógica que deseas ejecutar cuando se haga la solicitud GET
+         // Obtener todos los registros de la tabla novedades
+         $detalles = Detalle::all();
+
+         // Si quieres devolver los datos como JSON (ideal para API)
+         return response()->json($detalles); 
+    }
     
 
     public function index()
