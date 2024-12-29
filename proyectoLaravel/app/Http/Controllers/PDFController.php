@@ -9,7 +9,7 @@ use FPDF;
 class PDFController extends Controller
 {
     protected $pdf;
-
+    
     public function detalles()
     {
         // Lógica que deseas ejecutar cuando se haga la solicitud GET
@@ -20,10 +20,11 @@ class PDFController extends Controller
          return response()->json($detalles); 
     }
     
-
+    
     public function index()
     {
         // Definición de los reportes como un array
+
         
         $reportes = [
             [
@@ -122,7 +123,34 @@ class PDFController extends Controller
     public function generarPDF(Request $request)
     {
         // Configuración inicial del PDF
+
+
         $datos = $request->all();
+
+        // Contenido
+        $fecha_reporte = $datos['fecha_reporte'];  // Suponiendo que esta es una fecha en formato 'Y-m-d'
+
+        // Restar un mes a la fecha
+        $fecha_mes_anterior = strtotime("-1 month", strtotime($fecha_reporte));
+        
+        // Obtener el nombre del mes anterior en mayúsculas
+        $meses = array(
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        );
+        
+        // Suponiendo que $fecha_mes_anterior es una fecha tipo timestamp
+        $mes = date('n', $fecha_mes_anterior) - 1; // Los meses comienzan en 0 en el array
+        
+        $nombre_mes_anterior = strtoupper($meses[$mes]);
+       # $nombre_mes_anterior = strtoupper(date('F', $fecha_mes_anterior));
+        
+        // Obtener el año actual
+        $anio_actual = date('Y');
+        
+        // Concatenar el mes anterior con el año actual
+        $periodo = "{$nombre_mes_anterior} {$anio_actual}";
+        
         
 
         if (!isset($datos['cliente'])) {
@@ -161,7 +189,7 @@ class PDFController extends Controller
 
         $this->pdf->Cell(40, $lineHeight, 'DESTINATARIOS:', 0, 0, 'L');
         $this->pdf->SetFont('Arial', 'B', 9);
-        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['cliente']), 1, 1, 'L');
+        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['destinatario']), 1, 1, 'L');
 
         $this->pdf->Ln(3);
 
@@ -175,41 +203,40 @@ class PDFController extends Controller
         // ... (similarly for other fields)
 
         $this->pdf->Cell(40, $lineHeight, 'PERIODO:', 0, 0, 'L');
-        $this->pdf->Cell(60, $lineHeight, utf8_decode($datos['cliente']), 1, 0, 'L'); // Agregamos borde a la derecha
+        $this->pdf->Cell(60, $lineHeight, utf8_decode($periodo), 1, 0, 'L'); // Agregamos borde a la derecha
         
         // Agregar un espacio en blanco entre las celdas
         $this->pdf->Cell(10, $lineHeight, '', 0, 0, 'L');
         
         $this->pdf->Cell(30, $lineHeight, 'NO. DE REPORTE:', 0, 0, 'L');
-        $this->pdf->Cell(50, $lineHeight, utf8_decode($datos['cliente']), 1, 1, 'L');
+        $this->pdf->Cell(50, $lineHeight, utf8_decode($datos['id']), 1, 1, 'L');
 
-
-        // ... (resto del contenido del PDF)
-
-        // ... (otros campos que desees agregar)
-
-        // Salto de línea
+        
         $this->pdf->Ln();
 
-        
-      
-        
-        // Contenido
+
         $this->pdf->SetFont('Arial', 'B', 11);
         $this->pdf->Cell(190, 10, utf8_decode('1.	INTRODUCCIÓN'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' . $datos['fecha_reporte'] . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' .  $nombre_mes_anterior . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
         // Descargar el PDF
         $this->pdf->SetLeftMargin(20);
        
         // Lista numerada dinámica desde el array $datos['items']
-        if (isset($datos['items']) && is_array($datos['items'])) {
-        $counter = 1;
-        foreach ($datos['items'] as $item) {
-            $this->pdf->Ln(2); // Espacio entre los elementos de la lista
-            $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . '. ' . $item), 0, 'L');
-            $counter++;
+
+
+        if (isset($datos['desc_localidad']) && is_string($datos['desc_localidad'])) {
+            // Convertir la cadena en un array, separando por coma
+            $datos['desc_localidad'] = explode(',', $datos['desc_localidad']);
         }
+        
+        if (isset($datos['desc_localidad']) && is_array($datos['desc_localidad'])) {
+            $counter = 1;
+            foreach ($datos['desc_localidad'] as $item) {
+                $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+                $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . '. ' . $item), 0, 'L');
+                $counter++;
+            }
         }
 
         $this->pdf->Ln();
@@ -222,10 +249,25 @@ class PDFController extends Controller
         $this->pdf->Cell(190, 10, utf8_decode('2.	RESÚMEN DE ACTIVIDADES'), 0, 1, 'L');
         $this->pdf->SetX($margenOriginal);
         $this->pdf->Cell(190, 10, utf8_decode('2.1.	COBERTURA DEL SERVICIO'), 0, 1, 'L');
+
+        $sumaCol3 = 0;
+        $sumaCol4 = 0;
+
+        foreach ([$datos['cobertura_servicio']] as $row) {
+            if (isset($row[2])) {
+                $sumaCol3 += (int)$row[2]; // Columna 3
+            }
+            if (isset($row[3])) {
+                $sumaCol4 += (int)$row[3]; // Columna 4
+            }
+        }
+
+        $sumaTotal= $sumaCol3 + $sumaCol4;
+
         $this->pdf->SetX($margenOriginal);
 
         $this->pdf->SetFont('Arial', '', 9);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad se mantuvo cubierto en todos los sitios durante el periodo, con un total de '. $datos['cliente'].' puestos de servicio para asegurar una vigilancia constante en las áreas asignadas, de acuerdo a la siguiente tabla:'), 0, 'J');        
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad se mantuvo cubierto en todos los sitios durante el periodo, con un total de '.$sumaTotal .' puestos de servicio para asegurar una vigilancia constante en las áreas asignadas, de acuerdo a la siguiente tabla:'), 0, 'J');        
 
 
         #tabla 1
@@ -312,8 +354,8 @@ class PDFController extends Controller
     // }
 
        
-        if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
-            foreach ($datos['tabla'] as $row) {
+        if (!empty($datos['cobertura_servicio']) && is_array($datos['cobertura_servicio'])) {
+            foreach ([$datos['cobertura_servicio']] as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -338,21 +380,11 @@ class PDFController extends Controller
         }
         
         // Antes de retornar el PDF, después de generar el contenido de la tabla
-        $this->pdf->Ln(); // Salto de línea para el pie de tabla
+       # $this->pdf->Ln(); // Salto de línea para el pie de tabla
         $this->pdf->SetX($margenOriginal);
 
         // Sumar las columnas 3 y 4
-        $sumaCol3 = 0;
-        $sumaCol4 = 0;
-
-        foreach ($datos['tabla'] as $row) {
-            if (isset($row[2])) {
-                $sumaCol3 += (int)$row[2]; // Columna 3
-            }
-            if (isset($row[3])) {
-                $sumaCol4 += (int)$row[3]; // Columna 4
-            }
-        }
+        
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
@@ -371,12 +403,25 @@ class PDFController extends Controller
 
 
          // Contenido
+         // Sumar las columnas 3 y 4
+         $sumaCol3 = 0;
+         $sumaCol4 = 0;
+ 
+         foreach ([$datos['ronda_vigilancia'] ]as $row) {
+             if (isset($row[1])) {
+                 $sumaCol3 += (int)$row[1]; // Columna 3
+             }
+             if (isset($row[2])) {
+                 $sumaCol4 += (int)$row[2]; // Columna 4
+             }
+         }
+
          $this->pdf->SetFont('Arial', 'B', 11);
          $this->pdf->Cell(190, 10, utf8_decode('2.2.	RONDAS DE VIGILANCIA:'), 0, 1, 'L');
  
          $this->pdf->SetX($margenOriginal);
          $this->pdf->SetFont('Arial', '', 9);
-         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se realizaron un total de '. $datos['cliente'] . ' rondas de vigilancia y ' . $datos['cliente'] . '  marcaciones QR, distribuidas entre los diferentes puntos de servicio. Estas rondas se llevaron a cabo en horarios aleatorios para maximizar la efectividad y minimizar los riesgos de incidentes.'), 0, 'J');        
+         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se realizaron un total de '. $sumaCol3 . ' rondas de vigilancia y ' . $sumaCol4 . '  marcaciones QR, distribuidas entre los diferentes puntos de servicio. Estas rondas se llevaron a cabo en horarios aleatorios para maximizar la efectividad y minimizar los riesgos de incidentes.'), 0, 'J');        
 
          $this->pdf->Ln();
 
@@ -405,9 +450,11 @@ class PDFController extends Controller
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->SetFont('Arial', '', 8);
 
+         
 
-        if (!empty($datos['tabla2']) && is_array($datos['tabla2'])) {
-            foreach ($datos['tabla2'] as $row) {
+
+        if (!empty($datos['ronda_vigilancia']) && is_array($datos['ronda_vigilancia'])) {
+            foreach ([$datos['ronda_vigilancia']] as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -434,18 +481,7 @@ class PDFController extends Controller
       
         $this->pdf->SetX($margenOriginal);
 
-        // Sumar las columnas 3 y 4
-        $sumaCol3 = 0;
-        $sumaCol4 = 0;
-
-        foreach ($datos['tabla2'] as $row) {
-            if (isset($row[1])) {
-                $sumaCol3 += (int)$row[1]; // Columna 3
-            }
-            if (isset($row[2])) {
-                $sumaCol4 += (int)$row[2]; // Columna 4
-            }
-        }
+       
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
@@ -459,13 +495,42 @@ class PDFController extends Controller
 
 
         // Contenido
+         // Sumar las columnas 3 y 4
+         $sumaCol3 = 0;
+         $sumaCol4 = 0;
+         $sumaCol5 = 0;
+         $sumaCol6 = 0;
+         $sumaCol7 = 0;
+ 
+         foreach ([$datos['control_acceso']] as $row) {
+             if (isset($row[1])) {
+                 $sumaCol3 += (int)$row[1]; // Columna 3
+             }
+             if (isset($row[2])) {
+                 $sumaCol4 += (int)$row[2]; // Columna 4
+             }
+             if (isset($row[3])) {
+                 $sumaCol5 += (int)$row[3]; // Columna 4
+             }
+             if (isset($row[4])) {
+                 $sumaCol6 += (int)$row[4]; // Columna 4
+             }
+ 
+             if (isset($row[5])) {
+                 $sumaCol7 += (int)$row[5]; // Columna 4
+             }
+ 
+             
+         }
+
+
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFont('Arial', 'B', 11);
         $this->pdf->Cell(190, 10, utf8_decode('2.3.	CONTROL DE ACCESOS:'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se gestionaron un total de ' . $datos['cliente'] . ' registros de control de accesos de empleados, visitantes, proveedores, y clientes, en las distintas instalaciones ingresados en nuestro sistema PROTEAPP®.  El proceso de control incluyó la verificación de identidades y la inspección de vehículos conforme a los procedimientos establecidos, garantizando el cumplimiento de las políticas de seguridad de ' . $datos['cliente'] . ' .'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se gestionaron un total de ' . $sumaCol7 . ' registros de control de accesos de empleados, visitantes, proveedores, y clientes, en las distintas instalaciones ingresados en nuestro sistema PROTEAPP®.  El proceso de control incluyó la verificación de identidades y la inspección de vehículos conforme a los procedimientos establecidos, garantizando el cumplimiento de las políticas de seguridad de ' . $datos['cliente'] . ' .'), 0, 'J');
 
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
@@ -496,8 +561,8 @@ class PDFController extends Controller
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['tabla3']) && is_array($datos['tabla3'])) {
-            foreach ($datos['tabla3'] as $row) {
+        if (!empty($datos['control_acceso']) && is_array($datos['control_acceso'])) {
+            foreach ([$datos['control_acceso']] as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -524,33 +589,7 @@ class PDFController extends Controller
       
         $this->pdf->SetX($margenOriginal);
 
-        // Sumar las columnas 3 y 4
-        $sumaCol3 = 0;
-        $sumaCol4 = 0;
-        $sumaCol5 = 0;
-        $sumaCol6 = 0;
-        $sumaCol7 = 0;
-
-        foreach ($datos['tabla3'] as $row) {
-            if (isset($row[1])) {
-                $sumaCol3 += (int)$row[1]; // Columna 3
-            }
-            if (isset($row[2])) {
-                $sumaCol4 += (int)$row[2]; // Columna 4
-            }
-            if (isset($row[3])) {
-                $sumaCol5 += (int)$row[3]; // Columna 4
-            }
-            if (isset($row[4])) {
-                $sumaCol6 += (int)$row[4]; // Columna 4
-            }
-
-            if (isset($row[5])) {
-                $sumaCol7 += (int)$row[5]; // Columna 4
-            }
-
-            
-        }
+       
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
@@ -566,6 +605,11 @@ class PDFController extends Controller
         #-------------Tabla 4 ------------------
 
         // Contenido
+        $sumaTotal = 0;
+        if (!empty($datos['reporte_custodia']) && is_array($datos['reporte_custodia'])) {
+            $sumaTotal= count($datos['reporte_custodia']);
+         }
+
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);
 
@@ -573,7 +617,7 @@ class PDFController extends Controller
         $this->pdf->Cell(190, 10, utf8_decode('2.4.	REPORTE DE CUSTODIAS '), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de agosto se realizaron un total de ' . $datos['cliente'] .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de agosto se realizaron un total de ' . $sumaTotal .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
         
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);
@@ -604,9 +648,13 @@ class PDFController extends Controller
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->SetFont('Arial', '', 8);
 
+       
+        
+        if (!empty($datos['reporte_custodia']) && is_array($datos['reporte_custodia'])) {
+           
 
-        if (!empty($datos['tabla4']) && is_array($datos['tabla4'])) {
-            foreach ($datos['tabla4'] as $row) {
+            foreach ([$datos['reporte_custodia']] as $row) {
+
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -649,12 +697,22 @@ class PDFController extends Controller
 
 
         // Contenido
+         // Sumar las columnas 3 y 4
+         $sumaCol = 0;
+
+
+         foreach ([$datos['incidencia_seguridad']] as $row) {
+             if (isset($row[4])) {
+                 $sumaCol += (int)$row[4]; // Columna 3
+             }
+         }
+
         $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFont('Arial', 'B', 11);
         $this->pdf->Cell(190, 10, utf8_decode('3.2.	NOVEDADES REPORTADAS EN PROTEAPP® '), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A lo largo de este período, se han identificado y reportado en nuestro sistema PROTEAPP® '. $datos['cliente'] . ' novedades relevantes en todos los sitios, que destacan la importancia de nuestra gestión de vigilancia y seguridad, las cuales se resumen a continuación:'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A lo largo de este período, se han identificado y reportado en nuestro sistema PROTEAPP® '. $sumaCol . ' novedades relevantes en todos los sitios, que destacan la importancia de nuestra gestión de vigilancia y seguridad, las cuales se resumen a continuación:'), 0, 'J');
 
         
         $this->pdf->Ln( );
@@ -691,8 +749,8 @@ class PDFController extends Controller
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['tabla5']) && is_array($datos['tabla5'])) {
-            foreach ($datos['tabla5'] as $row) {
+        if (!empty($datos['incidencia_seguridad']) && is_array($datos['incidencia_seguridad'])) {
+            foreach ([$datos['incidencia_seguridad']] as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -719,15 +777,7 @@ class PDFController extends Controller
     
         $this->pdf->SetX($margenOriginal);
 
-        // Sumar las columnas 3 y 4
-        $sumaCol = 0;
-
-
-        foreach ($datos['tabla5'] as $row) {
-            if (isset($row[4])) {
-                $sumaCol += (int)$row[4]; // Columna 3
-            }
-        }
+       
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
@@ -786,8 +836,8 @@ class PDFController extends Controller
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['tabla6']) && is_array($datos['tabla6'])) {
-            foreach ($datos['tabla6'] as $row) {
+        if (!empty($datos['novedades_reportadas']) && is_array($datos['novedades_reportadas'])) {
+            foreach ([$datos['novedades_reportadas'] ]as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -856,8 +906,8 @@ class PDFController extends Controller
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['tabla7']) && is_array($datos['tabla7'])) {
-            foreach ($datos['tabla7'] as $row) {
+        if (!empty($datos['cambio_nomina_personal']) && is_array($datos['cambio_nomina_personal'])) {
+            foreach ([$datos['cambio_nomina_personal'] ]as $row) {
                 $this->pdf->SetX($margenOriginal);
         
                 // Calcular alturas de las celdas
@@ -889,12 +939,12 @@ class PDFController extends Controller
         $this->pdf->Cell(190, 10, utf8_decode('5.	VALORES AGREGADOS'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $datos['cliente'] . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $nombre_mes_anterior . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
-        if (isset($datos['items2']) && is_array($datos['items2'])) {
+        if (isset($datos['acciones_correctivas']) && is_array($datos['acciones_correctivas'])) {
             $counter = 1;
-            foreach ($datos['items2'] as $item) {
+            foreach ([$datos['acciones_correctivas']] as $item) {
                 $this->pdf->Ln(2); // Espacio entre los elementos de la lista
                 $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . ') ' . $item), 0, 'L');
                 $counter++;
@@ -909,7 +959,7 @@ class PDFController extends Controller
         $this->pdf->Cell(190, 10, utf8_decode('6.	CONCLUSIONES Y RECOMENDACIONES'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $datos['cliente'] . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $nombre_mes_anterior . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
 
 
         $this->pdf->Ln( );
