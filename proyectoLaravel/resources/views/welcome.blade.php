@@ -144,10 +144,21 @@
      
                 </tbody>
                 <script>
-                   fetch('/detalles')
-    .then(response => response.json())  // Convertir la respuesta en formato JSON
-    .then(data => {
-        console.log(data);
+            var recomendaciones;
+
+            fetch('/recomendaciones')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+                console.log("recomendaciones", data);
+                recomendaciones= data;
+                })
+            .catch(error => {
+                console.error('Error al cargar los detalles:', error);
+            });
+            fetch('/detalles')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+            console.log(data);
 
         // Agrupar los datos por 'desc_cliente' y 'fecha_reporte'
         const groupedData = {};
@@ -239,7 +250,12 @@
             console.log("group",group)
             console.log("localidad", [[... new Set(group.desc_localidad)].join(',')])
 
+            const clienteRecomendaciones = recomendaciones.filter(recomendacion => recomendacion.cliente === group.desc_cliente);
+
             // Crear una fila por cada grupo
+            const recomendacionesJSON = JSON.stringify(clienteRecomendaciones);
+            console.log("json",recomendacionesJSON)
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index++}</td>
@@ -247,9 +263,9 @@
                 <td>${group.fecha_reporte}</td>
         
                 <td>
-                    <a href="/generar-pdf?cliente=${encodeURIComponent(group.desc_cliente)}&id=${encodeURIComponent(index++)}&destinatario=${encodeURIComponent(group.destinatario)}&fecha_reporte=${encodeURIComponent(group.fecha_reporte)}&fecha_novedad=${encodeURIComponent(group.fecha_novedad.join(','))}&desc_codigo=${encodeURIComponent(group.desc_codigo.join(','))}&desc_localidad=${encodeURIComponent([[... new Set(group.desc_localidad)].join(',')])}&desc_puesto=${encodeURIComponent(group.desc_puesto.join(','))}&desc_agente=${encodeURIComponent(group.desc_agente.join(','))}&desc_tipo_novedad=${encodeURIComponent(group.desc_tipo_novedad.join(','))}&desc_tipo_hallazgo=${encodeURIComponent(group.desc_tipo_hallazgo.join(','))}&desc_tipo_incidente=${encodeURIComponent(group.desc_tipo_incidente.join(','))}&desc_tipo_act_puesto=${encodeURIComponent(group.desc_tipo_act_puesto.join(','))}&desc_tipo_novedad_protemaxi=${encodeURIComponent(group.desc_tipo_novedad_protemaxi.join(','))}&desc_titulo=${encodeURIComponent(group.desc_titulo.join(','))}&desc_detalle=${encodeURIComponent(group.desc_detalle.join(','))}&desc_persona_involucrada=${encodeURIComponent(group.desc_persona_involucrada.join(','))}&desc_lugar_involucrado=${encodeURIComponent(group.desc_lugar_involucrado.join(','))}&desc_comentario=${encodeURIComponent(group.desc_comentario.join(','))}&desc_nombre_central=${encodeURIComponent(group.desc_nombre_central.join(','))}&fecha_envio_novedad=${encodeURIComponent(group.fecha_envio_novedad.join(','))}&desc_estado_novedad=${encodeURIComponent(group.desc_estado_novedad.join(','))}&desc_estado_aprobacion=${encodeURIComponent(group.desc_estado_aprobacion.join(','))}&cobertura_servicio=${encodeURIComponent(group.cobertura_servicio.join(','))}&ronda_vigilancia=${encodeURIComponent(group.ronda_vigilancia.join(','))}&control_acceso=${encodeURIComponent(group.control_acceso.join(','))}&reporte_custodia=${encodeURIComponent(group.reporte_custodia.join(','))}&incidencia_seguridad=${encodeURIComponent(group.incidencia_seguridad.join(','))}&novedades_reportadas=${encodeURIComponent(group.novedades_reportadas.join(','))}&cambio_nomina_personal=${encodeURIComponent(group.cambio_nomina_personal.join(','))}&acciones_correctivas=${encodeURIComponent(group.acciones_correctivas.join(','))}&valores_agregados=${encodeURIComponent(group.valores_agregados.join(','))}&conclusion_recomendaciones=${encodeURIComponent(group.conclusion_recomendaciones.join(','))}" class="btn-report">
+                    <a href="/generar-pdf?cliente=${encodeURIComponent(group.desc_cliente)}&id=${encodeURIComponent(index++)}&destinatario=${encodeURIComponent(group.destinatario)}&fecha_reporte=${encodeURIComponent(group.fecha_reporte)}&fecha_novedad=${encodeURIComponent(group.fecha_novedad.join(','))}&desc_codigo=${encodeURIComponent(group.desc_codigo.join(','))}&desc_localidad=${encodeURIComponent([[... new Set(group.desc_localidad)].join(',')])}&desc_puesto=${encodeURIComponent(group.desc_puesto.join(','))}&desc_agente=${encodeURIComponent(group.desc_agente.join(','))}&desc_tipo_novedad=${encodeURIComponent(group.desc_tipo_novedad.join(','))}&desc_tipo_hallazgo=${encodeURIComponent(group.desc_tipo_hallazgo.join(','))}&desc_tipo_incidente=${encodeURIComponent(group.desc_tipo_incidente.join(','))}&desc_tipo_act_puesto=${encodeURIComponent(group.desc_tipo_act_puesto.join(','))}&desc_tipo_novedad_protemaxi=${encodeURIComponent(group.desc_tipo_novedad_protemaxi.join(','))}&desc_titulo=${encodeURIComponent(group.desc_titulo.join(','))}&desc_detalle=${encodeURIComponent(group.desc_detalle.join(','))}&desc_persona_involucrada=${encodeURIComponent(group.desc_persona_involucrada.join(','))}&desc_lugar_involucrado=${encodeURIComponent(group.desc_lugar_involucrado.join(','))}&desc_comentario=${encodeURIComponent(group.desc_comentario.join(','))}&desc_nombre_central=${encodeURIComponent(group.desc_nombre_central.join(','))}&fecha_envio_novedad=${encodeURIComponent(group.fecha_envio_novedad.join(','))}&desc_estado_novedad=${encodeURIComponent(group.desc_estado_novedad.join(','))}&desc_estado_aprobacion=${encodeURIComponent(group.desc_estado_aprobacion.join(','))}&cobertura_servicio=${encodeURIComponent(group.cobertura_servicio.join(','))}&ronda_vigilancia=${encodeURIComponent(group.ronda_vigilancia.join(','))}&control_acceso=${encodeURIComponent(group.control_acceso.join(','))}&reporte_custodia=${encodeURIComponent(group.reporte_custodia.join(','))}&incidencia_seguridad=${encodeURIComponent(group.incidencia_seguridad.join(','))}&novedades_reportadas=${encodeURIComponent(group.novedades_reportadas.join(','))}&cambio_nomina_personal=${encodeURIComponent(group.cambio_nomina_personal.join(','))}&acciones_correctivas=${encodeURIComponent(group.acciones_correctivas.join(','))}&valores_agregados=${encodeURIComponent(group.valores_agregados.join(','))}&conclusion_recomendaciones=${encodeURIComponent(group.conclusion_recomendaciones.join(','))}&recomendaciones=${encodeURIComponent(recomendacionesJSON)}" class="btn-report">
                         &#128190; Generar Reporte
-                    </a>
+                    </a> 
                 </td>
             `;
             detallesTable.appendChild(row);
@@ -260,6 +276,8 @@
     });
 
 
+
+    
 
        
     </script>

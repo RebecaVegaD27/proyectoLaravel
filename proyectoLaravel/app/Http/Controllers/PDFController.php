@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Detalle;
+use App\Models\Recomendacion;
 use Illuminate\Http\Request;
 use FPDF;
 
@@ -18,6 +19,16 @@ class PDFController extends Controller
 
          // Si quieres devolver los datos como JSON (ideal para API)
          return response()->json($detalles); 
+    }
+    
+    public function recomendaciones ()
+    {
+        // Lógica que deseas ejecutar cuando se haga la solicitud GET
+         // Obtener todos los registros de la tabla novedades
+         $recomendaciones = Recomendacion::all();
+
+         // Si quieres devolver los datos como JSON (ideal para API)
+         return response()->json($recomendaciones); 
     }
     
     
@@ -987,7 +998,77 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $nombre_mes_anterior . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal);
 
+    
+        $this->pdf->SetFont('Arial', 'B', 8);
+
+
+        // Cabecera de la tabla
+        $header = array(
+        'INCIDENCIA',
+        'FRECUENCIA',
+        'RECOMENDACION');
+        $w = array(75, 30, 90);
+
+        // Color de fondo de la cabecera (negro)
+        $this->pdf->SetFillColor(0, 0, 0);
+
+        // Color del texto (blanco)
+        $this->pdf->SetTextColor(255, 255, 255);
+
+        $this->pdf->SetX($margenOriginal);
+
+        // Cabecera
+        for($i=0;$i<count($header);$i++)
+            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+
+        $this->pdf->Ln();
+        
+         // Restaurar color
+         $this->pdf->SetFillColor(224, 235, 255);
+         $this->pdf->SetTextColor(0, 0, 0);
+         $this->pdf->SetFont('Arial', '', 8);
+
+         
+         if (isset($datos['recomendaciones']) && is_string($datos['recomendaciones'])) {
+            // Convertir la cadena en un array, separando por coma
+            $recomendaciones = json_decode($datos['recomendaciones'], true);
+           
+
+        }
+
+        
+        $this->pdf->SetX($margenOriginal);
+
+  
+       if (isset($recomendaciones) && is_array($recomendaciones)) {
+            foreach ($recomendaciones as $row) {
+                
+                $this->pdf->Cell(75, 10, $row['titulo'], 1, 0, 'C');  // Columna Titulo
+                $this->pdf->Cell(30, 10, $row['frecuencia'], 1, 0, 'C');  // Columna Frecuencia
+                $this->pdf->Cell(90, 10, $row['recomendacion'], 1, 'J');  // Columna Recomenda
+                 $this->pdf->SetX($margenOriginal);
+            }
+        }
+
+
+        
+        
+        // if (isset($datos['recomendaciones']) && is_array($datos['recomendaciones'])) {
+        //     $counter = 1;
+        //     foreach ($datos['recomendaciones'] as $item) {
+        //         $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+        //         $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . '. ' . $item), 0, 'L');
+        //         $counter++;
+        //     }
+        // }
+
+
+        
+       # $this->pdf->MultiCell(190, $lineHeight, utf8_decode($datos['recomendaciones']), 0, 'J');
+        
 
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);

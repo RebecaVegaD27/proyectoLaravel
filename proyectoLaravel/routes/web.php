@@ -20,3 +20,5 @@ Route::get('/', [PDFController::class, 'index'])->name('reportes.index');
 
 Route::get('/detalles', [PDFController::class, 'detalles']);
 
+Route::get('/recomendaciones', [PDFController::class, 'recomendaciones']);
+
