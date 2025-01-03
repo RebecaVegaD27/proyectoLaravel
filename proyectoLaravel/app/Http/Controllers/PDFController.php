@@ -617,7 +617,7 @@ class PDFController extends Controller
         $this->pdf->Cell(190, 10, utf8_decode('2.4.	REPORTE DE CUSTODIAS '), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de agosto se realizaron un total de ' . $sumaTotal .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de '. $nombre_mes_anterior .' se realizaron un total de ' . $sumaTotal .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
         
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);
@@ -625,22 +625,49 @@ class PDFController extends Controller
 
         $this->pdf->SetFont('Arial', 'B', 8);
 
+        $this->pdf->Ln();  // Salto de línea después de la configuración inicial
+$this->pdf->SetX($margenOriginal);
 
-        // Cabecera de la tabla
-        $header = array( 'NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO DE LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
-        $w = array(15, 20, 20, 30, 20, 40, 20,30);
+$this->pdf->SetFont('Arial', 'B', 8);  // Fuente de la cabecera
 
-        // Color de fondo de la cabecera (negro)
-        $this->pdf->SetFillColor(0, 0, 0);
+// Cabecera de la tabla
+$header = array('NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO DE LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
+$w = array(15, 15, 15, 35, 35, 20, 25, 35);  // Ancho de las columnas
 
-        // Color del texto (blanco)
-        $this->pdf->SetTextColor(255, 255, 255);
+// Color de fondo de la cabecera (negro)
+$this->pdf->SetFillColor(0, 0, 0);
 
-        $this->pdf->SetX($margenOriginal);
+// Color del texto (blanco)
+$this->pdf->SetTextColor(255, 255, 255);
 
-        // Cabecera
-        for($i=0;$i<count($header);$i++)
-            $this->pdf->Cell($w[$i],7,$header[$i],1,0,'C',1);
+$this->pdf->SetX($margenOriginal);
+
+// Cabecera usando Cell
+for ($i = 0; $i < count($header); $i++) {
+    $headerText = $header[$i];
+
+    // Si el texto es largo, lo ajustamos manualmente para que se ajuste dentro de la celda
+    $this->pdf->Cell($w[$i], 7, $headerText, 1, 0, 'C', true);  // Usamos Cell para que todo esté en una fila
+}
+
+$this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
+
+
+        // // Cabecera de la tabla
+        // $header = array( 'NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO DE LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
+        // $w = array(15, 20, 20, 30, 20, 40, 20,30);
+
+        // // Color de fondo de la cabecera (negro)
+        // $this->pdf->SetFillColor(0, 0, 0);
+
+        // // Color del texto (blanco)
+        // $this->pdf->SetTextColor(255, 255, 255);
+
+        // $this->pdf->SetX($margenOriginal);
+
+        // // Cabecera
+        // for($i=0;$i<count($header);$i++)
+        //     $this->pdf->MultiCell($w[$i],7,$header[$i],1,0,'C',1);
         $this->pdf->Ln();
 
         // Restaurar color
@@ -728,7 +755,7 @@ class PDFController extends Controller
         'HALLAZGOS',
         'NOVEDADES DEL SITIO',
         'TOTAL NOVEDADES REPORTADAS EN PROTEAPP');
-        $w = array(40, 20, 20, 50, 50);
+        $w = array(40, 20, 20, 45, 70);
 
         // Color de fondo de la cabecera (negro)
         $this->pdf->SetFillColor(0, 0, 0);
@@ -785,8 +812,8 @@ class PDFController extends Controller
         $this->pdf->Cell(40, 5, 'TOTAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
         $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 5
         $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 6
-        $this->pdf->Cell(50, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
-        $this->pdf->Cell(50, 5, $sumaCol, 1, 0, 'C', true); // Celda vacía para la columna 7
+        $this->pdf->Cell(45, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
+        $this->pdf->Cell(70, 5, $sumaCol, 1, 0, 'C', true); // Celda vacía para la columna 7
         
 
         $this->pdf->SetFillColor(224, 235, 255);
@@ -885,7 +912,7 @@ class PDFController extends Controller
         'FECHA DEL INCIDENTE',
         'INCIDENTE',
         'MEDIDA DE CONTROL');
-        $w = array(20,  30, 30, 50, 50);
+        $w = array(20,  30, 40, 40, 50);
 
         // Color de fondo de la cabecera (negro)
         $this->pdf->SetFillColor(0, 0, 0);
