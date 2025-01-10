@@ -15,7 +15,7 @@
         .navbar {
             display: flex;
             align-items: center;
-            background-color: #FF6347;
+            background-color: #00008B;
             padding: 1rem;
             color: #fff;
         }
@@ -67,7 +67,7 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.9rem;
             width: 40%;
-            background-color: #FF6347;
+            background-color: #00008B;
             color: #fff;
             border: none;
             border-radius: 4px;
