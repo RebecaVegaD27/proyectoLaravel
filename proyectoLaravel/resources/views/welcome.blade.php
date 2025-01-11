@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -176,27 +176,69 @@
             }
         }
 
-        function generarPDF(cliente, group) {
-            const url = `/generar-pdf?${new URLSearchParams({
-                cliente: cliente,
-                fecha_reporte: group.fecha_reporte,
-                destinatario: group.destinatario,
-                fecha_novedad: group.fecha_novedad.join(','),
-            }).toString()}`;
-            
-            window.location.href = url;
+        function generarPDF(index, cliente, group) {
+    // Función para asegurar que las propiedades sean arrays antes de hacer join
+    const asegurarArray = (valor) => {
+        return Array.isArray(valor) ? valor : [];
+    };
+
+    const url = `/generar-pdf?${new URLSearchParams({
+        cliente: cliente,
+        id: index,  // Asegúrate de incluir el ID si lo necesitas
+        destinatario: group.destinatario || '', // Valida si 'destinatario' existe
+        fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
+        fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
+        desc_codigo: asegurarArray(group.desc_codigo).join(','),
+        desc_localidad: [...new Set(asegurarArray(group.desc_localidad))].join(','),
+        desc_puesto: asegurarArray(group.desc_puesto).join(','),
+        desc_agente: asegurarArray(group.desc_agente).join(','),
+        desc_tipo_novedad: asegurarArray(group.desc_tipo_novedad).join(','),
+        desc_tipo_hallazgo: asegurarArray(group.desc_tipo_hallazgo).join(','),
+        desc_tipo_incidente: asegurarArray(group.desc_tipo_incidente).join(','),
+        desc_tipo_act_puesto: asegurarArray(group.desc_tipo_act_puesto).join(','),
+        desc_tipo_novedad_protemaxi: asegurarArray(group.desc_tipo_novedad_protemaxi).join(','),
+        desc_titulo: asegurarArray(group.desc_titulo).join(','),
+        desc_detalle: asegurarArray(group.desc_detalle).join(','),
+        desc_persona_involucrada: asegurarArray(group.desc_persona_involucrada).join(','),
+        desc_lugar_involucrado: asegurarArray(group.desc_lugar_involucrado).join(','),
+        desc_comentario: asegurarArray(group.desc_comentario).join(','),
+        desc_nombre_central: asegurarArray(group.desc_nombre_central).join(','),
+        fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
+        desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
+        desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
+        cobertura_servicio: asegurarArray(group.cobertura_servicio).join(','),
+        ronda_vigilancia: asegurarArray(group.ronda_vigilancia).join(','),
+        control_acceso: asegurarArray(group.control_acceso).join(','),
+        reporte_custodia: asegurarArray(group.reporte_custodia).join(','),
+        incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
+        novedades_reportadas: asegurarArray(group.novedades_reportadas).join(','),
+        cambio_nomina_personal: asegurarArray(group.cambio_nomina_personal).join(','),
+        acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
+        valores_agregados: asegurarArray(group.valores_agregados).join(','),
+        conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
+        recomendaciones: recomendacionesJSON || '' // Verifica si `recomendacionesJSON` está definido
+    }).toString()}`;
+
+    // Redirigir al usuario para generar el PDF
+    window.location.href = url;
+}
+
+                 
+
+        function handleButtonClick(index, cliente, groupJSON, event) {
+            // Llamar a la función con los parámetros correctos
+            actualizarFechaYGenerarPDF(index, cliente, JSON.parse(groupJSON), event);
         }
 
-        async function actualizarFechaYGenerarPDF(cliente, group, event) {
-            event.preventDefault();
+        async function actualizarFechaYGenerarPDF(index, cliente, group, event) {
+            event.preventDefault(); // Esto ahora debería funcionar sin problemas
             const loadingScreen = document.querySelector('.loading');
             loadingScreen.style.display = 'flex';
 
             try {
                 const fechaActual = new Date().toISOString().split('T')[0];
-                const fechasNovedad = group.fecha_novedad; // Obtener las fechas de novedad del objeto `group`
-                
-                // Hacer la petición al servidor para actualizar la fecha de reporte
+                const fechasNovedad = group.fecha_novedad;
+
                 const response = await fetch('/actualizar-fecha-reporte', {
                     method: 'POST',
                     headers: {
@@ -206,7 +248,7 @@
                     body: JSON.stringify({
                         cliente: cliente,
                         fecha_reporte: fechaActual,
-                        fechas_novedad: fechasNovedad // Incluir las fechas de novedad en la petición
+                        fechas_novedad: fechasNovedad
                     })
                 });
 
@@ -215,17 +257,13 @@
                 }
 
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    // Actualizar la fecha en la tabla
                     const fechaCell = event.target.closest('tr').querySelector('td:nth-child(3)');
                     fechaCell.textContent = fechaActual;
-
-                    // Actualizar la fecha en el objeto group
                     group.fecha_reporte = fechaActual;
 
-                    // Generar el PDF
-                    generarPDF(cliente, group);
+                    generarPDF(index, cliente, group);
                 } else {
                     throw new Error('No se pudo actualizar la fecha');
                 }
@@ -245,14 +283,14 @@
 
                 // Agrupar los datos
                 data.forEach(detalle => {
-                    const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad); 
+                    const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
 
                     const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
                             desc_cliente: detalle.desc_cliente,
-                            periodo: periodo, 
+                            periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
                             // Otros campos...
@@ -273,21 +311,20 @@
 
                 Object.keys(groupedData).forEach(key => {
                     const group = groupedData[key];
-                    const row = document.createElement('tr');
                     const groupJSON = JSON.stringify(group)
                         .replace(/'/g, "\\'")  
                         .replace(/"/g, '&quot;'); 
 
+                    const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index++}</td>
                         <td>${group.desc_cliente}</td>
                         <td>${group.periodo}</td>
                         <td>${group.fecha_reporte}</td>
                         <td>
-                            <button onclick='actualizarFechaYGenerarPDF("${group.desc_cliente}", ${groupJSON}, event)' class="btn-report">
+                            <button onclick="handleButtonClick(${index}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
                                 &#128190; Generar Reporte
                             </button>
-                            
                         </td>
                     `;
                     detallesTable.appendChild(row);
