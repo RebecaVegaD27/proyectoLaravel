@@ -10,6 +10,36 @@ use FPDF;
 class PDFController extends Controller
 {
     protected $pdf;
+
+    public function actualizarFechaReporte(Request $request)
+    {
+        // Validación de los datos recibidos
+        $request->validate([
+            'cliente' => 'required|string',
+            'fecha_reporte' => 'required|date',
+            'fechas_novedad' => 'required|array',
+            'fechas_novedad.*' => 'date'
+        ]);
+
+        // Obtener los datos enviados
+        $cliente = $request->input('cliente');
+        $fecha_reporte = $request->input('fecha_reporte');
+        $fechas_novedad = $request->input('fechas_novedad');
+
+        // Actualizar todos los registros de "fecha_novedad" correspondientes a ese cliente
+        try {
+            // Si tienes una relación de cliente a detalles, puedes hacer algo como esto:
+            Detalle::where('desc_cliente', $cliente)
+                ->whereIn('fecha_novedad', $fechas_novedad) // Filtramos por las fechas de novedad
+                ->update(['fecha_reporte' => $fecha_reporte]); // Actualizamos la fecha del reporte
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+
     
     public function detalles()
     {

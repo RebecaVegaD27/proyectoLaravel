@@ -16,6 +16,9 @@ Route::get('/reporte-con-imagen', [PDFController::class, 'reporteConImagen'])->n
 // routes/web.php
 use App\Http\Controllers\Controller;
 
+Route::post('/actualizar-fecha-reporte', [PDFController::class, 'actualizarFechaReporte']);
+
+
 Route::get('/', [PDFController::class, 'index'])->name('reportes.index');
 
 Route::get('/detalles', [PDFController::class, 'detalles']);
