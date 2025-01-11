@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -124,7 +124,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Cliente</th>
-                        <th>Periodo</th> <!-- Nueva columna para el Periodo -->
+                        <th>Periodo</th>
                         <th>Fecha de Reporte</th>
                         <th>Acción</th>
                     </tr>
@@ -137,6 +137,19 @@
     </div>
 
     <script>
+        // Variable para almacenar las recomendaciones
+        let recomendacionesJSON = [];
+
+        // Obtener las recomendaciones
+        fetch('/recomendaciones')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+                recomendacionesJSON = data;
+            })
+            .catch(error => {
+                console.error('Error al obtener las recomendaciones:', error);
+            });
+
         // Función para obtener el nombre del mes en mayúsculas y el año
         function obtenerNombreMesYAnio(fecha) {
             const opciones = { year: 'numeric', month: 'long' };
@@ -177,53 +190,51 @@
         }
 
         function generarPDF(index, cliente, group) {
-    // Función para asegurar que las propiedades sean arrays antes de hacer join
-    const asegurarArray = (valor) => {
-        return Array.isArray(valor) ? valor : [];
-    };
+            // Función para asegurar que las propiedades sean arrays antes de hacer join
+            const asegurarArray = (valor) => {
+                return Array.isArray(valor) ? valor : [];
+            };
 
-    const url = `/generar-pdf?${new URLSearchParams({
-        cliente: cliente,
-        id: index,  // Asegúrate de incluir el ID si lo necesitas
-        destinatario: group.destinatario || '', // Valida si 'destinatario' existe
-        fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
-        fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
-        desc_codigo: asegurarArray(group.desc_codigo).join(','),
-        desc_localidad: [...new Set(asegurarArray(group.desc_localidad))].join(','),
-        desc_puesto: asegurarArray(group.desc_puesto).join(','),
-        desc_agente: asegurarArray(group.desc_agente).join(','),
-        desc_tipo_novedad: asegurarArray(group.desc_tipo_novedad).join(','),
-        desc_tipo_hallazgo: asegurarArray(group.desc_tipo_hallazgo).join(','),
-        desc_tipo_incidente: asegurarArray(group.desc_tipo_incidente).join(','),
-        desc_tipo_act_puesto: asegurarArray(group.desc_tipo_act_puesto).join(','),
-        desc_tipo_novedad_protemaxi: asegurarArray(group.desc_tipo_novedad_protemaxi).join(','),
-        desc_titulo: asegurarArray(group.desc_titulo).join(','),
-        desc_detalle: asegurarArray(group.desc_detalle).join(','),
-        desc_persona_involucrada: asegurarArray(group.desc_persona_involucrada).join(','),
-        desc_lugar_involucrado: asegurarArray(group.desc_lugar_involucrado).join(','),
-        desc_comentario: asegurarArray(group.desc_comentario).join(','),
-        desc_nombre_central: asegurarArray(group.desc_nombre_central).join(','),
-        fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
-        desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
-        desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
-        cobertura_servicio: asegurarArray(group.cobertura_servicio).join(','),
-        ronda_vigilancia: asegurarArray(group.ronda_vigilancia).join(','),
-        control_acceso: asegurarArray(group.control_acceso).join(','),
-        reporte_custodia: asegurarArray(group.reporte_custodia).join(','),
-        incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
-        novedades_reportadas: asegurarArray(group.novedades_reportadas).join(','),
-        cambio_nomina_personal: asegurarArray(group.cambio_nomina_personal).join(','),
-        acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
-        valores_agregados: asegurarArray(group.valores_agregados).join(','),
-        conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
-        recomendaciones: recomendacionesJSON || '' // Verifica si `recomendacionesJSON` está definido
-    }).toString()}`;
+            const url = `/generar-pdf?${new URLSearchParams({
+                cliente: cliente,
+                id: index,  // Asegúrate de incluir el ID si lo necesitas
+                destinatario: group.destinatario || '', // Valida si 'destinatario' existe
+                fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
+                fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
+                desc_codigo: asegurarArray(group.desc_codigo).join(','),
+                desc_localidad: [...new Set(asegurarArray(group.desc_localidad))].join(','),
+                desc_puesto: asegurarArray(group.desc_puesto).join(','),
+                desc_agente: asegurarArray(group.desc_agente).join(','),
+                desc_tipo_novedad: asegurarArray(group.desc_tipo_novedad).join(','),
+                desc_tipo_hallazgo: asegurarArray(group.desc_tipo_hallazgo).join(','),
+                desc_tipo_incidente: asegurarArray(group.desc_tipo_incidente).join(','),
+                desc_tipo_act_puesto: asegurarArray(group.desc_tipo_act_puesto).join(','),
+                desc_tipo_novedad_protemaxi: asegurarArray(group.desc_tipo_novedad_protemaxi).join(','),
+                desc_titulo: asegurarArray(group.desc_titulo).join(','),
+                desc_detalle: asegurarArray(group.desc_detalle).join(','),
+                desc_persona_involucrada: asegurarArray(group.desc_persona_involucrada).join(','),
+                desc_lugar_involucrado: asegurarArray(group.desc_lugar_involucrado).join(','),
+                desc_comentario: asegurarArray(group.desc_comentario).join(','),
+                desc_nombre_central: asegurarArray(group.desc_nombre_central).join(','),
+                fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
+                desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
+                desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
+                cobertura_servicio: asegurarArray(group.cobertura_servicio).join(','),
+                ronda_vigilancia: asegurarArray(group.ronda_vigilancia).join(','),
+                control_acceso: asegurarArray(group.control_acceso).join(','),
+                reporte_custodia: asegurarArray(group.reporte_custodia).join(','),
+                incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
+                novedades_reportadas: asegurarArray(group.novedades_reportadas).join(','),
+                cambio_nomina_personal: asegurarArray(group.cambio_nomina_personal).join(','),
+                acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
+                valores_agregados: asegurarArray(group.valores_agregados).join(','),
+                conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
+                recomendaciones: JSON.stringify(recomendacionesJSON) || '' // Se pasa el JSON de recomendaciones
+            }).toString()}`;
 
-    // Redirigir al usuario para generar el PDF
-    window.location.href = url;
-}
-
-                 
+            // Redirigir al usuario para generar el PDF
+            window.location.href = url;
+        }
 
         function handleButtonClick(index, cliente, groupJSON, event) {
             // Llamar a la función con los parámetros correctos
