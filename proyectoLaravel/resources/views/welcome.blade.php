@@ -150,6 +150,8 @@
                 console.error('Error al obtener las recomendaciones:', error);
             });
 
+            
+
         // Función para obtener el nombre del mes en mayúsculas y el año
         function obtenerNombreMesYAnio(fecha) {
             const opciones = { year: 'numeric', month: 'long' };
@@ -229,7 +231,7 @@
                 acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
                 valores_agregados: asegurarArray(group.valores_agregados).join(','),
                 conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
-                recomendaciones: JSON.stringify(recomendacionesJSON) || '' // Se pasa el JSON de recomendaciones
+                recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === group.desc_cliente)) || '' // Se pasa el JSON de recomendaciones
             }).toString()}`;
 
             // Redirigir al usuario para generar el PDF
