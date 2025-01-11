@@ -182,64 +182,62 @@
                 fecha_reporte: group.fecha_reporte,
                 destinatario: group.destinatario,
                 fecha_novedad: group.fecha_novedad.join(','),
-                // Agrega aquí los otros campos según sea necesario
             }).toString()}`;
             
             window.location.href = url;
         }
 
         async function actualizarFechaYGenerarPDF(cliente, group, event) {
-    event.preventDefault();
-    const loadingScreen = document.querySelector('.loading');
-    loadingScreen.style.display = 'flex';
-    
-    try {
-        const fechaActual = new Date().toISOString().split('T')[0];
-        const fechasNovedad = group.fecha_novedad; // Obtener las fechas de novedad del objeto `group`
-        
-        // Hacer la petición al servidor para actualizar la fecha de reporte
-        const response = await fetch('/actualizar-fecha-reporte', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                cliente: cliente,
-                fecha_reporte: fechaActual,
-                fechas_novedad: fechasNovedad // Incluir las fechas de novedad en la petición
-            })
-        });
+            event.preventDefault();
+            const loadingScreen = document.querySelector('.loading');
+            loadingScreen.style.display = 'flex';
 
-        if (!response.ok) {
-            throw new Error('Error al actualizar la fecha');
+            try {
+                const fechaActual = new Date().toISOString().split('T')[0];
+                const fechasNovedad = group.fecha_novedad; // Obtener las fechas de novedad del objeto `group`
+                
+                // Hacer la petición al servidor para actualizar la fecha de reporte
+                const response = await fetch('/actualizar-fecha-reporte', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        cliente: cliente,
+                        fecha_reporte: fechaActual,
+                        fechas_novedad: fechasNovedad // Incluir las fechas de novedad en la petición
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al actualizar la fecha');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Actualizar la fecha en la tabla
+                    const fechaCell = event.target.closest('tr').querySelector('td:nth-child(3)');
+                    fechaCell.textContent = fechaActual;
+
+                    // Actualizar la fecha en el objeto group
+                    group.fecha_reporte = fechaActual;
+
+                    // Generar el PDF
+                    generarPDF(cliente, group);
+                } else {
+                    throw new Error('No se pudo actualizar la fecha');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un error al actualizar la fecha del reporte');
+            } finally {
+                loadingScreen.style.display = 'none';
+            }
         }
 
-        const data = await response.json();
-        
-        if (data.success) {
-            // Actualizar la fecha en la tabla
-            const fechaCell = event.target.closest('tr').querySelector('td:nth-child(3)');
-            fechaCell.textContent = fechaActual;
-
-            // Actualizar la fecha en el objeto group
-            group.fecha_reporte = fechaActual;
-
-            // Generar el PDF
-            generarPDF(cliente, group);
-        } else {
-            throw new Error('No se pudo actualizar la fecha');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Hubo un error al actualizar la fecha del reporte');
-    } finally {
-        loadingScreen.style.display = 'none';
-    }
-}
-
-
-      
+        // Fetch para cargar los detalles de los datos
         fetch('/detalles')
             .then(response => response.json())
             .then(data => {
@@ -247,45 +245,17 @@
 
                 // Agrupar los datos
                 data.forEach(detalle => {
-                    // Extraer el periodo (mes-año) de la fecha_novedad
-                    const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad); // Usar la función aquí
+                    const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad); 
 
                     const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
                             desc_cliente: detalle.desc_cliente,
-                            periodo: periodo,  // Nueva columna de periodo
+                            periodo: periodo, 
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
-                            desc_codigo: [],
-                            desc_localidad: [],
-                            desc_puesto: [],
-                            desc_agente: [],
-                            desc_tipo_novedad: [],
-                            desc_tipo_hallazgo: [],
-                            desc_tipo_incidente: [],
-                            desc_tipo_act_puesto: [],
-                            desc_tipo_novedad_protemaxi: [],
-                            desc_titulo: [],
-                            desc_detalle: [],
-                            desc_persona_involucrada: [],
-                            desc_lugar_involucrado: [],
-                            desc_comentario: [],
-                            desc_nombre_central: [],
-                            fecha_envio_novedad: [],
-                            desc_estado_novedad: [],
-                            desc_estado_aprobacion: [],
-                            cobertura_servicio: [],
-                            ronda_vigilancia: [],
-                            control_acceso: [],
-                            reporte_custodia: [],
-                            incidencia_seguridad: [],
-                            novedades_reportadas: [],
-                            cambio_nomina_personal: [],
-                            acciones_correctivas: [],
-                            valores_agregados: [],
-                            conclusion_recomendaciones: []
+                            // Otros campos...
                         };
                     }
 
@@ -305,13 +275,13 @@
                     const group = groupedData[key];
                     const row = document.createElement('tr');
                     const groupJSON = JSON.stringify(group)
-                        .replace(/'/g, "\\'")  // Para evitar problemas con comillas
-                        .replace(/"/g, '&quot;');  // Para evitar problemas con comillas dobles
+                        .replace(/'/g, "\\'")  
+                        .replace(/"/g, '&quot;'); 
 
                     row.innerHTML = `
                         <td>${index++}</td>
                         <td>${group.desc_cliente}</td>
-                        <td>${group.periodo}</td> <!-- Mostrar el periodo -->
+                        <td>${group.periodo}</td>
                         <td>${group.fecha_reporte}</td>
                         <td>
                             <button onclick='actualizarFechaYGenerarPDF("${group.desc_cliente}", ${groupJSON}, event)' class="btn-report">
