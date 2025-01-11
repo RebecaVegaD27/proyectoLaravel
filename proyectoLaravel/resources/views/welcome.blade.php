@@ -334,11 +334,11 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index++}</td>
-                        <td>${group.desc_cliente}</td>
+                        <td>Cliente ${index-1}</td>
                         <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
                         <td>${group.fecha_reporte}</td>
                         <td>
-                            <button onclick="handleButtonClick(${index}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
+                            <button onclick="handleButtonClick(${index++}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
                                 &#128190; Generar Reporte
                             </button>
                         </td>
