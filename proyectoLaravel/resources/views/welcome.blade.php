@@ -198,6 +198,7 @@
             const url = `/generar-pdf?${new URLSearchParams({
                 cliente: cliente,
                 id: index,  // Asegúrate de incluir el ID si lo necesitas
+                periodo: group.periodo || '',  // Añadir periodo aquí
                 destinatario: group.destinatario || '', // Valida si 'destinatario' existe
                 fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
                 fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
@@ -334,7 +335,7 @@
                     row.innerHTML = `
                         <td>${index++}</td>
                         <td>${group.desc_cliente}</td>
-                        <td>${group.periodo}</td>
+                        <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
                         <td>${group.fecha_reporte}</td>
                         <td>
                             <button onclick="handleButtonClick(${index}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">

@@ -245,7 +245,7 @@ public function actualizarFechaReporte(Request $request)
         // ... (similarly for other fields)
 
         $this->pdf->Cell(40, $lineHeight, 'PERIODO:', 0, 0, 'L');
-        $this->pdf->Cell(60, $lineHeight, utf8_decode($periodo), 1, 0, 'L'); // Agregamos borde a la derecha
+        $this->pdf->Cell(60, $lineHeight, utf8_decode($datos['periodo']), 1, 0, 'L'); // Agregamos borde a la derecha
         
         // Agregar un espacio en blanco entre las celdas
         $this->pdf->Cell(10, $lineHeight, '', 0, 0, 'L');
