@@ -287,6 +287,7 @@
                             <button onclick='actualizarFechaYGenerarPDF("${group.desc_cliente}", ${groupJSON}, event)' class="btn-report">
                                 &#128190; Generar Reporte
                             </button>
+                            
                         </td>
                     `;
                     detallesTable.appendChild(row);
