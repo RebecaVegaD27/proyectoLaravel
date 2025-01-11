@@ -251,7 +251,7 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->Cell(10, $lineHeight, '', 0, 0, 'L');
         
         $this->pdf->Cell(30, $lineHeight, 'NO. DE REPORTE:', 0, 0, 'L');
-        $this->pdf->Cell(50, $lineHeight, utf8_decode($datos['id']), 1, 1, 'L');
+        $this->pdf->Cell(50, $lineHeight, utf8_decode($datos['id']-1), 1, 1, 'L');
 
         
         $this->pdf->Ln();
