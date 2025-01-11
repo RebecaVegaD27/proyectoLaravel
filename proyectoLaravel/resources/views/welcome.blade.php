@@ -150,8 +150,6 @@
                 console.error('Error al obtener las recomendaciones:', error);
             });
 
-            
-
         // Función para obtener el nombre del mes en mayúsculas y el año
         function obtenerNombreMesYAnio(fecha) {
             const opciones = { year: 'numeric', month: 'long' };
@@ -272,10 +270,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    const fechaCell = event.target.closest('tr').querySelector('td:nth-child(3)');
-                    fechaCell.textContent = fechaActual;
-                    group.fecha_reporte = fechaActual;
+                    // Solo actualizamos la columna "Fecha de Reporte"
+                    const fechaCell = event.target.closest('tr').querySelector('td:nth-child(4)'); // Columna de fecha reporte
+                    fechaCell.textContent = fechaActual; // Actualizar solo la fecha
 
+                    // Mantén el valor del "Periodo" sin cambios
+                    group.fecha_reporte = fechaActual; // Actualiza el objeto en el cliente
+
+                    // Llamamos a la función para generar el PDF con los datos actualizados
                     generarPDF(index, cliente, group);
                 } else {
                     throw new Error('No se pudo actualizar la fecha');
