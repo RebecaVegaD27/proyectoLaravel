@@ -13,6 +13,14 @@
             margin: 0;
             padding: 0;
         }
+        .search-input {
+    padding: 0.5rem;
+    width: 300px;  /* Aseguramos que todos tengan el mismo ancho */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    margin-right: 0.5rem;
+}
         .navbar {
             display: flex;
             align-items: center;
@@ -114,8 +122,9 @@
         <h2>Módulo de Reportería</h2>
 
         <div class="search-container">
-            <input type="text" placeholder="Buscar Cliente..." onkeyup="buscarPorCliente()">
-            <input type="date" placeholder="Buscar por Fecha" onchange="buscarPorFecha()">
+            <input type="text"  class="search-input" placeholder="Buscar Cliente..." onkeyup="buscarPorCliente()">
+            <input type="month" class="search-input" placeholder="Buscar por Periodo" onchange="buscarPorPeriodo()">
+            <input type="date" class="search-input" placeholder="Buscar por Fecha" onchange="buscarPorFecha()">
         </div>
 
         <div class="table-container">
@@ -174,6 +183,47 @@
             }
         }
 
+        function buscarPorPeriodo() {
+    const inputPeriodo = document.querySelector('.search-container input[type="month"]');
+    const periodoSeleccionado = inputPeriodo.value; // Recoge el valor de mes y año (YYYY-MM)
+    const table = document.querySelector('table');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const tdPeriodo = tr[i].getElementsByTagName('td')[2]; // Columna de Periodo
+        if (tdPeriodo) {
+            const periodoValue = tdPeriodo.textContent || tdPeriodo.innerText;
+
+            // Convertir el texto "ENERO 2024" a formato "2024-01"
+            const [mes, anio] = periodoValue.split(' ');
+            const mesNumerico = obtenerMesNumerico(mes); // Función que convierte el nombre del mes a número
+            const periodoFormateado = `${anio}-${String(mesNumerico).padStart(2, '0')}`;
+
+            // Comparar el periodo en la tabla con el valor seleccionado
+            tr[i].style.display = periodoFormateado.includes(periodoSeleccionado) || periodoSeleccionado === "" ? "" : "none";
+        }
+    }
+}
+
+// Función para convertir el nombre del mes a su número correspondiente
+function obtenerMesNumerico(mes) {
+    const meses = {
+        "ENERO": 1,
+        "FEBRERO": 2,
+        "MARZO": 3,
+        "ABRIL": 4,
+        "MAYO": 5,
+        "JUNIO": 6,
+        "JULIO": 7,
+        "AGOSTO": 8,
+        "SEPTIEMBRE": 9,
+        "OCTUBRE": 10,
+        "NOVIEMBRE": 11,
+        "DICIEMBRE": 12
+    };
+    return meses[mes.toUpperCase()] || 0; // Devuelve el número del mes, o 0 si no es un mes válido
+}
+
         function buscarPorFecha() {
             const inputFecha = document.querySelector('.search-container input[type="date"]');
             const fechaSeleccionada = inputFecha.value;
@@ -189,14 +239,14 @@
             }
         }
 
-        function generarPDF(index, cliente, group) {
+        function generarPDF(index, nombre_generico, cliente, group) {
             // Función para asegurar que las propiedades sean arrays antes de hacer join
             const asegurarArray = (valor) => {
                 return Array.isArray(valor) ? valor : [];
             };
 
             const url = `/generar-pdf?${new URLSearchParams({
-                cliente: cliente,
+                cliente: nombre_generico,
                 id: index,  // Asegúrate de incluir el ID si lo necesitas
                 periodo: group.periodo || '',  // Añadir periodo aquí
                 destinatario: group.destinatario || '', // Valida si 'destinatario' existe
@@ -237,12 +287,12 @@
             window.location.href = url;
         }
 
-        function handleButtonClick(index, cliente, groupJSON, event) {
+        function handleButtonClick(index,nombre_generico, cliente, groupJSON, event) {
             // Llamar a la función con los parámetros correctos
-            actualizarFechaYGenerarPDF(index, cliente, JSON.parse(groupJSON), event);
+            actualizarFechaYGenerarPDF(index, nombre_generico, cliente, JSON.parse(groupJSON), event);
         }
 
-        async function actualizarFechaYGenerarPDF(index, cliente, group, event) {
+        async function actualizarFechaYGenerarPDF(index, nombre_generico, cliente, group, event) {
             event.preventDefault(); // Esto ahora debería funcionar sin problemas
             const loadingScreen = document.querySelector('.loading');
             loadingScreen.style.display = 'flex';
@@ -279,7 +329,7 @@
                     group.fecha_reporte = fechaActual; // Actualiza el objeto en el cliente
 
                     // Llamamos a la función para generar el PDF con los datos actualizados
-                    generarPDF(index, cliente, group);
+                    generarPDF(index, nombre_generico, cliente, group);
                 } else {
                     throw new Error('No se pudo actualizar la fecha');
                 }
@@ -291,17 +341,25 @@
             }
         }
 
-        // Fetch para cargar los detalles de los datos
-        fetch('/detalles')
+       // Fetch para cargar los detalles de los datos
+       fetch('/detalles')
             .then(response => response.json())
             .then(data => {
                 const groupedData = {};
+                const clienteMap = {}; // Mapa para asociar un cliente con un número genérico
+                let clienteCounter = 1; // Contador para asignar un nombre genérico a cada cliente
 
                 // Agrupar los datos
                 data.forEach(detalle => {
                     const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
 
                     const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
+
+                     // Si el cliente no está en el mapa, asignamos un nombre genérico
+                     if (!clienteMap[detalle.desc_cliente]) {
+                        clienteMap[detalle.desc_cliente] = `Cliente ${clienteCounter++}`; // Asignar un nombre genérico
+                    }
+
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
@@ -331,14 +389,17 @@
                         .replace(/'/g, "\\'")  
                         .replace(/"/g, '&quot;'); 
 
+                    // Obtener el nombre genérico del cliente desde el mapa
+                    const clienteGenerico = clienteMap[group.desc_cliente];
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index++}</td>
-                        <td>Cliente ${index-1}</td>
+                        <td>${clienteGenerico} ${group.desc_cliente}</td>
                         <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
                         <td>${group.fecha_reporte}</td>
                         <td>
-                            <button onclick="handleButtonClick(${index++}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
+                            <button onclick="handleButtonClick(${index}, '${clienteGenerico}' , '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
                                 &#128190; Generar Reporte
                             </button>
                         </td>
@@ -349,6 +410,7 @@
             .catch(error => {
                 console.error('Error al cargar los detalles:', error);
             });
+
     </script>
 </body>
 </html>
