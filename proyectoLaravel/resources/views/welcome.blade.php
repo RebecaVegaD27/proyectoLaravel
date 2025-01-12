@@ -291,17 +291,23 @@
             }
         }
 
-        // Fetch para cargar los detalles de los datos
-        fetch('/detalles')
+          // Fetch para cargar los detalles de los datos
+          fetch('/detalles')
             .then(response => response.json())
             .then(data => {
                 const groupedData = {};
+                const clienteMap = {}; // Mapa para asociar un cliente con un número genérico
+                let clienteCounter = 1; // Contador para asignar un nombre genérico a cada cliente
 
                 // Agrupar los datos
                 data.forEach(detalle => {
                     const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
-
                     const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
+
+                    // Si el cliente no está en el mapa, asignamos un nombre genérico
+                    if (!clienteMap[detalle.desc_cliente]) {
+                        clienteMap[detalle.desc_cliente] = `Cliente ${clienteCounter++}`; // Asignar un nombre genérico
+                    }
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
@@ -331,14 +337,17 @@
                         .replace(/'/g, "\\'")  
                         .replace(/"/g, '&quot;'); 
 
+                    // Obtener el nombre genérico del cliente desde el mapa
+                    const clienteGenerico = clienteMap[group.desc_cliente]; // Siempre usaremos el mismo nombre para el mismo cliente
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index++}</td>
-                        <td>Cliente ${index-1}</td>
-                        <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
+                        <td>${clienteGenerico} </td> <!-- Mostrar el nombre genérico del cliente -->
+                        <td>${group.periodo}</td>
                         <td>${group.fecha_reporte}</td>
                         <td>
-                            <button onclick="handleButtonClick(${index++}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
+                            <button onclick="handleButtonClick(${index++}, '${clienteGenerico}', '${groupJSON}', event)" class="btn-report">
                                 &#128190; Generar Reporte
                             </button>
                         </td>
