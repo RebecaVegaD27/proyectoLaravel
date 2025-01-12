@@ -341,25 +341,42 @@ function obtenerMesNumerico(mes) {
             }
         }
 
-       // Fetch para cargar los detalles de los datos
-       fetch('/detalles')
-            .then(response => response.json())
-            .then(data => {
-                const groupedData = {};
-                const clienteMap = {}; // Mapa para asociar un cliente con un número genérico
-                let clienteCounter = 1; // Contador para asignar un nombre genérico a cada cliente
+        // Función para verificar si la fecha actual es igual o mayor al día 5 del mes actual
+function esFechaPosteriorAlDia5() {
+    const hoy = new Date();
+    const diaHoy = hoy.getDate();
+    return diaHoy >= 5;
+}
 
-                // Agrupar los datos
-                data.forEach(detalle => {
+// Fetch para cargar los detalles de los datos
+fetch('/detalles')
+    .then(response => response.json())
+    .then(data => {
+        const groupedData = {};
+        const clienteMap = {}; // Mapa para asociar un cliente con un número genérico
+        let clienteCounter = 1; // Contador para asignar un nombre genérico a cada cliente
+
+        // Verificar si la fecha actual es igual o mayor al día 5 del mes actual
+        const incluirMesAnterior = esFechaPosteriorAlDia5();
+
+        // Obtener la fecha actual
+        const hoy = new Date();
+        const mesActual = hoy.getMonth(); // Mes actual (0 - 11)
+        const anioActual = hoy.getFullYear(); // Año actual
+
+        // Agrupar los datos
+        data.forEach(detalle => {
+            const fechaNovedad = new Date(detalle.fecha_novedad);
+            const mesFecha = fechaNovedad.getMonth(); // Mes de la fecha de novedad (0 - 11)
+            const anioFecha = fechaNovedad.getFullYear(); // Año de la fecha de novedad
+
+            // Determinar si la fecha debe ser incluida dependiendo de la condición de fecha
+            if (incluirMesAnterior) {
+                // Si estamos después del día 5, incluir fechas de meses anteriores (excepto el mes actual)
+                if (anioFecha < anioActual || (anioFecha === anioActual && mesFecha < mesActual)) {
+                    // Agrupar por cliente y periodo
                     const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
-
                     const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
-
-                     // Si el cliente no está en el mapa, asignamos un nombre genérico
-                     if (!clienteMap[detalle.desc_cliente]) {
-                        clienteMap[detalle.desc_cliente] = `Cliente ${clienteCounter++}`; // Asignar un nombre genérico
-                    }
-
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
@@ -367,49 +384,69 @@ function obtenerMesNumerico(mes) {
                             periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
-                            // Otros campos...
                         };
                     }
+                    groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
+                }
+            } else {
+                // Si estamos antes del día 5, solo incluir fechas de meses anteriores (no del mes actual)
+                if (anioFecha < anioActual || (anioFecha === anioActual && mesFecha < mesActual)) {
+                    // Agrupar por cliente y periodo
+                    const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
+                    const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
 
-                    // Agregar los valores a los arrays correspondientes
-                    Object.keys(groupedData[key]).forEach(field => {
-                        if (Array.isArray(groupedData[key][field]) && detalle[field] !== undefined) {
-                            groupedData[key][field].push(detalle[field]);
-                        }
-                    });
-                });
+                    if (!groupedData[key]) {
+                        groupedData[key] = {
+                            desc_cliente: detalle.desc_cliente,
+                            periodo: periodo,
+                            fecha_reporte: detalle.fecha_reporte,
+                            fecha_novedad: [],
+                        };
+                    }
+                    groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
+                }
+            }
 
-                // Llenar la tabla
-                const detallesTable = document.getElementById('detallesTable');
-                let index = 1;
+            // Asignar nombre genérico al cliente
+            if (!clienteMap[detalle.desc_cliente]) {
+                clienteMap[detalle.desc_cliente] = `Cliente ${clienteCounter++}`; // Asignar un nombre genérico
+            }
+        });
 
-                Object.keys(groupedData).forEach(key => {
-                    const group = groupedData[key];
-                    const groupJSON = JSON.stringify(group)
-                        .replace(/'/g, "\\'")  
-                        .replace(/"/g, '&quot;'); 
+        // Llenar la tabla
+        const detallesTable = document.getElementById('detallesTable');
+        let index = 1;
 
-                    // Obtener el nombre genérico del cliente desde el mapa
-                    const clienteGenerico = clienteMap[group.desc_cliente];
+        Object.keys(groupedData).forEach(key => {
+            const group = groupedData[key];
+            const groupJSON = JSON.stringify(group)
+                .replace(/'/g, "\\'")  
+                .replace(/"/g, '&quot;'); 
 
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index++}</td>
-                        <td>${clienteGenerico} ${group.desc_cliente}</td>
-                        <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
-                        <td>${group.fecha_reporte}</td>
-                        <td>
-                            <button onclick="handleButtonClick(${index}, '${clienteGenerico}' , '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
-                                &#128190; Generar Reporte
-                            </button>
-                        </td>
-                    `;
-                    detallesTable.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.error('Error al cargar los detalles:', error);
-            });
+            // Obtener el nombre genérico del cliente desde el mapa
+            const clienteGenerico = clienteMap[group.desc_cliente];
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index++}</td>
+                <td>${clienteGenerico} ${group.desc_cliente}</td>
+                <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
+                <td>${group.fecha_reporte}</td>
+                <td>
+                    <button onclick="handleButtonClick(${index}, '${clienteGenerico}' , '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
+                        &#128190; Generar Reporte
+                    </button>
+                </td>
+            `;
+            detallesTable.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Error al cargar los detalles:', error);
+    });
+
+
+     
 
     </script>
 </body>
