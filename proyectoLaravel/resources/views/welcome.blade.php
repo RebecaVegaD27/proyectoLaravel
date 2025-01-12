@@ -429,7 +429,7 @@ fetch('/detalles')
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index++}</td>
-                <td>${clienteGenerico} ${group.desc_cliente}</td>
+                <td>${clienteGenerico} </td>
                 <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
                 <td>${group.fecha_reporte}</td>
                 <td>
