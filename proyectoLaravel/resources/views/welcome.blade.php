@@ -13,6 +13,14 @@
             margin: 0;
             padding: 0;
         }
+        .search-input {
+    padding: 0.5rem;
+    width: 300px;  /* Aseguramos que todos tengan el mismo ancho */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    margin-right: 0.5rem;
+}
         .navbar {
             display: flex;
             align-items: center;
@@ -114,8 +122,9 @@
         <h2>Módulo de Reportería</h2>
 
         <div class="search-container">
-            <input type="text" placeholder="Buscar Cliente..." onkeyup="buscarPorCliente()">
-            <input type="date" placeholder="Buscar por Fecha" onchange="buscarPorFecha()">
+            <input type="text"  class="search-input" placeholder="Buscar Cliente..." onkeyup="buscarPorCliente()">
+            <input type="month" class="search-input" placeholder="Buscar por Periodo" onchange="buscarPorPeriodo()">
+            <input type="date" class="search-input" placeholder="Buscar por Fecha" onchange="buscarPorFecha()">
         </div>
 
         <div class="table-container">
@@ -173,6 +182,48 @@
                 }
             }
         }
+
+        function buscarPorPeriodo() {
+    const inputPeriodo = document.querySelector('.search-container input[type="month"]');
+    const periodoSeleccionado = inputPeriodo.value; // Recoge el valor de mes y año (YYYY-MM)
+    const table = document.querySelector('table');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const tdPeriodo = tr[i].getElementsByTagName('td')[2]; // Columna de Periodo
+        if (tdPeriodo) {
+            const periodoValue = tdPeriodo.textContent || tdPeriodo.innerText;
+
+            // Convertir el texto "ENERO 2024" a formato "2024-01"
+            const [mes, anio] = periodoValue.split(' ');
+            const mesNumerico = obtenerMesNumerico(mes); // Función que convierte el nombre del mes a número
+            const periodoFormateado = `${anio}-${String(mesNumerico).padStart(2, '0')}`;
+
+            // Comparar el periodo en la tabla con el valor seleccionado
+            tr[i].style.display = periodoFormateado.includes(periodoSeleccionado) || periodoSeleccionado === "" ? "" : "none";
+        }
+    }
+}
+
+// Función para convertir el nombre del mes a su número correspondiente
+function obtenerMesNumerico(mes) {
+    const meses = {
+        "ENERO": 1,
+        "FEBRERO": 2,
+        "MARZO": 3,
+        "ABRIL": 4,
+        "MAYO": 5,
+        "JUNIO": 6,
+        "JULIO": 7,
+        "AGOSTO": 8,
+        "SEPTIEMBRE": 9,
+        "OCTUBRE": 10,
+        "NOVIEMBRE": 11,
+        "DICIEMBRE": 12
+    };
+    return meses[mes.toUpperCase()] || 0; // Devuelve el número del mes, o 0 si no es un mes válido
+}
+
 
         function buscarPorFecha() {
             const inputFecha = document.querySelector('.search-container input[type="date"]');
