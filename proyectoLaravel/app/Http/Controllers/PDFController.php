@@ -169,29 +169,11 @@ public function actualizarFechaReporte(Request $request)
 
         $datos = $request->all();
 
-        // Contenido
-        $fecha_reporte = $datos['fecha_reporte'];  // Suponiendo que esta es una fecha en formato 'Y-m-d'
-
-        // Restar un mes a la fecha
-        $fecha_mes_anterior = strtotime("-1 month", strtotime($fecha_reporte));
         
-        // Obtener el nombre del mes anterior en mayúsculas
-        $meses = array(
-            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
-            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-        );
-        
-        // Suponiendo que $fecha_mes_anterior es una fecha tipo timestamp
-        $mes = date('n', $fecha_mes_anterior) - 1; // Los meses comienzan en 0 en el array
-        
-        $nombre_mes_anterior = strtoupper($meses[$mes]);
-       # $nombre_mes_anterior = strtoupper(date('F', $fecha_mes_anterior));
-        
-        // Obtener el año actual
-        $anio_actual = date('Y');
-        
-        // Concatenar el mes anterior con el año actual
-        $periodo = "{$nombre_mes_anterior} {$anio_actual}";
+       $periodo = $datos['periodo']; // "ENERO 2024"
+        $partes = explode(' ', $periodo); // Separa el string por espacio
+        $mes = $partes[0]; // El primer elemento es el nombre del mes
+    
         
         
 
@@ -210,7 +192,7 @@ public function actualizarFechaReporte(Request $request)
 
         $this->pdf->SetFont('Arial', 'B', 12);
         $this->pdf->Cell(0, 10, utf8_decode('CORRESPONDIENTE AL SERVICIO DE SEGURIDAD FÍSICA DE'), 0, 1, 'C');
-        $this->pdf->Cell(0, 10, utf8_decode('PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . $datos['cliente'] ), 0, 1, 'C');
+        $this->pdf->Cell(0, 10, utf8_decode('PROTEMAXI C. LTDA.,  EN EL PROYECTO ' . strtoupper($datos['cliente']) ), 0, 1, 'C');
         $this->pdf->Ln(20); // Espacio debajo del encabezado
 
     
@@ -260,7 +242,7 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->SetFont('Arial', 'B', 11);
         $this->pdf->Cell(190, 10, utf8_decode('1.	INTRODUCCIÓN'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' .  $nombre_mes_anterior . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('La información presentada en el siguiente informe corresponde a las actividades de seguridad, control y prevención que fueron realizadas por nuestro personal en las instalaciones de nuestro cliente ' . $datos['cliente'] . ' durante el mes de ' .  $mes . ', en los siguientes sitios donde se presta el servicio:'), 0, 'J');        
         // Descargar el PDF
         $this->pdf->SetLeftMargin(20);
        
@@ -659,7 +641,7 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->Cell(190, 10, utf8_decode('2.4.	REPORTE DE CUSTODIAS '), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de '. $nombre_mes_anterior .' se realizaron un total de ' . $sumaTotal .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de '. $mes .' se realizaron un total de ' . $sumaTotal .' custodias de mercaderías en tránsito, asegurando el traslado seguro desde las diferentes granjas. '), 0, 'J');
         
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);
@@ -1008,7 +990,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->Cell(190, 10, utf8_decode('5.	VALORES AGREGADOS'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $nombre_mes_anterior . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $mes . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
         if (isset($datos['acciones_correctivas']) && is_array($datos['acciones_correctivas'])) {
@@ -1028,7 +1010,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->Cell(190, 10, utf8_decode('6.	CONCLUSIONES Y RECOMENDACIONES'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $nombre_mes_anterior . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad proporcionado por PROTEMAXI durante ' . $mes . '  cumplió con los requisitos esperados, garantizando la protección de las instalaciones de '. $datos['cliente'] . '  en todos los puntos de servicio. '), 0, 'J');
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
 
