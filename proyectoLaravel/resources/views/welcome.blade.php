@@ -154,6 +154,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 recomendacionesJSON = data;
+                print("recomendaciones aqui", data)
             })
             .catch(error => {
                 console.error('Error al obtener las recomendaciones:', error);
