@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detalles', function (Blueprint $table) {
+        Schema::table('detalles', function (Blueprint $table) {
+            // Campos existentes
             $table->date('fecha_novedad');
             $table->date('fecha_reporte');
             $table->string('desc_codigo');
-            $table->string('desc_cliente');
+            $table->string('desc_cliente')->primary(); // Asegurando que 'desc_cliente' sea clave primaria
             $table->string('desc_localidad');
             $table->string('desc_puesto');
             $table->string('desc_agente');
@@ -33,8 +34,18 @@ return new class extends Migration
             $table->date('fecha_envio_novedad');
             $table->string('desc_estado_novedad');
             $table->string('desc_estado_aprobacion');
+            $table->string('desc_cobertura_servicio');
+            $table->string('desc_ronda_vigilancia');
+            $table->string('desc_control_acceso');
+            $table->string('desc_reporte_custodia');
+            $table->string('desc_incidencia_seguridad');
+            $table->string('desc_novedades_reportadas');
+            $table->string('desc_cambio_nomina_personal');
+            $table->string('desc_acciones_correctivas');
+            $table->string('desc_recomendaciones');
         });
-    }
+
+    }        
 
     /**
      * Reverse the migrations.
