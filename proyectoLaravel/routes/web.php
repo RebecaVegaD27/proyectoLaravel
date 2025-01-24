@@ -25,3 +25,10 @@ Route::get('/detalles', [PDFController::class, 'detalles']);
 
 Route::get('/recomendaciones', [PDFController::class, 'recomendaciones']);
 
+Route::get('/control', [PDFController::class, 'control']);
+
+Route::get('/novedades', [PDFController::class, 'novedades']);
+
+Route::get('/rondas', [PDFController::class, 'rondas']);
+
+
