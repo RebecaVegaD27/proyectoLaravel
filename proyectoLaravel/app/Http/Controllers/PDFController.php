@@ -526,27 +526,37 @@ $this->pdf->SetX($margenOriginal);
          $sumaCol5 = 0;
          $sumaCol6 = 0;
          $sumaCol7 = 0;
- 
-         foreach ([$datos['control_acceso']] as $row) {
-             if (isset($row[1])) {
-                 $sumaCol3 += (int)$row[1]; // Columna 3
-             }
-             if (isset($row[2])) {
-                 $sumaCol4 += (int)$row[2]; // Columna 4
-             }
-             if (isset($row[3])) {
-                 $sumaCol5 += (int)$row[3]; // Columna 4
-             }
-             if (isset($row[4])) {
-                 $sumaCol6 += (int)$row[4]; // Columna 4
-             }
- 
-             if (isset($row[5])) {
-                 $sumaCol7 += (int)$row[5]; // Columna 4
-             }
- 
-             
-         }
+
+         if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
+            foreach ($ronda_vigilancia as $row) {
+                // Verificar si 'id_empleado' está presente en el elemento
+                if (isset($row['id_empleado'])) {
+                    $sumaCol3 += (int)$row['id_empleado']; // Sumar 'id_empleado'
+                }
+                
+                // Verificar si 'id_visitante' está presente en el elemento
+                if (isset($row['id_visitante'])) {
+                    $sumaCol4 += (int)$row['id_visitante']; // Sumar 'id_visitante'
+                }
+        
+                // Verificar si 'id_cliente' está presente en el elemento (para Columna 5)
+                if (isset($row['id_cliente'])) {
+                    $sumaCol5 += (int)$row['id_cliente']; // Sumar 'id_cliente' para Columna 5
+                }
+        
+                // Verificar si 'id_cliente' está presente en el elemento (para Columna 6)
+                if (isset($row['id_cliente'])) {
+                    $sumaCol6 += (int)$row['id_cliente']; // Sumar 'id_cliente' para Columna 6
+                }
+        
+            }
+
+            if (isset($row[5])) {
+                $sumaCol7 += $sumaCol6 + $sumaCol5 + $sumaCol4 + $sumaCol3; // Sumar el valor de la columna 7
+            }
+        }
+        
+        
 
 
         $this->pdf->Ln();
@@ -880,11 +890,11 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
        if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
             foreach ($novedades_reportadas as $row) {
                 
-                $this->pdf->Cell(75, 10, $row['id_localidad'], 1, 0, 'C');  // Columna Titulo
-                $this->pdf->Cell(30, 10, $row['titulo'], 1, 0, 'C');  // Columna Frecuencia
-                $this->pdf->Cell(90, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(90, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(90, 10, $row['tipo_protemaxi'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(40, 10, $row['id_localidad'], 1, 0, 'C');  // Columna Titulo
+                $this->pdf->Cell(20, 10, $row['titulo'], 1, 0, 'C');  // Columna Frecuencia
+                $this->pdf->Cell(20, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(45, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(70, 10, $row['tipo_protemaxi'], 1, 'J');  // Columna Recomenda
                 $this->pdf->SetX($margenOriginal);
             }
         }
