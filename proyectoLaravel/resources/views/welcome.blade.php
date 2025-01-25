@@ -154,7 +154,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 rondasJSON = data;
-                
+                console.log("rondas", data)
             })
             .catch(error => {
                 console.error('Error al obtener rondasJSON:', error);
@@ -167,6 +167,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 novedadesJSON = data;
+                console.log("novedades", data)
                 
             })
             .catch(error => {
@@ -180,6 +181,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 controlJSON = data;
+                console.log("control", data)
                 
             })
             .catch(error => {
@@ -193,7 +195,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 recomendacionesJSON = data;
-                
+                console.log("recomendacions", data)
             })
             .catch(error => {
                 console.error('Error al obtener las recomendaciones:', error);
@@ -311,11 +313,11 @@ function obtenerMesNumerico(mes) {
                 desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
                 desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
                 cobertura_servicio: asegurarArray(group.cobertura_servicio).join(','),
-                ronda_vigilancia: asegurarArray(group.ronda_vigilancia).join(','),
-                control_acceso: asegurarArray(group.control_acceso).join(','),
+                ronda_vigilancia: JSON.stringify(rondasJSON.slice(0, 5)) || '',
+               control_acceso: JSON.stringify(controlJSON.slice(0, 5)) || '',
                 reporte_custodia: asegurarArray(group.reporte_custodia).join(','),
                 incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
-                novedades_reportadas: asegurarArray(group.novedades_reportadas).join(','),
+               novedades_reportadas: JSON.stringify(novedadesJSON.slice(0, 5)) || '',
                 cambio_nomina_personal: asegurarArray(group.cambio_nomina_personal).join(','),
                 acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
                 valores_agregados: asegurarArray(group.valores_agregados).join(','),
@@ -469,7 +471,7 @@ fetch('/detalles')
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index++}</td>
-                <td>${clienteGenerico} </td>
+                <td>${group.desc_cliente} ${clienteGenerico} </td>
                 <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
                 <td>${group.fecha_reporte}</td>
                 <td>

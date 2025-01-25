@@ -361,56 +361,7 @@ public function actualizarFechaReporte(Request $request)
         // Contenido de la tabla
         
         $this->pdf->SetFont('Arial', '', 8);
-         // Procesar los datos de la tabla
-        //  if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
-        //     foreach ($datos['tabla'] as $row) {
-        //         if (is_array($row)) {  // Verificar que la fila sea un array
-        //             $this->pdf->SetX($margenOriginal);
-        //             foreach ($w as $index => $width) {
-        //                 $value = isset($row[$index]) ? $row[$index] : '';
-        //                 $this->pdf->Cell($width, 6, utf8_decode($value), 1, 0, 'C');
-        //             }
-        //             $this->pdf->Ln();
-        //         }
-        //     }
-        // }
-
-       // ... (resto de tu código)
-
-    //    if (!empty($datos['tabla']) && is_array($datos['tabla'])) {
-    //     foreach ($datos['tabla'] as $row) {
-    //         if (is_array($row)) {
-    //             $this->pdf->SetX($margenOriginal);
-    
-    //             // Array para almacenar la altura requerida por cada celda en la fila
-    //             $cellHeights = [];
-    
-    //             // Primera pasada: determinar la altura máxima de la fila
-    //             foreach ($w as $index => $width) {
-    //                 $value = isset($row[$index]) ? $row[$index] : '';
-    
-    //                 // Guardar la posición actual
-    //                 $xPos = $this->pdf->GetX();
-    //                 $yPos = $this->pdf->GetY();
-    
-    //                 // Medir el texto con MultiCell y guardar la altura
-    //                 $this->pdf->MultiCell($width, 6, utf8_decode($value), 1, 'C');
-    //                 $cellHeights[] = $this->pdf->GetY() - $yPos;
-    
-    //                 // Volver a la posición original para no mover el cursor
-    //                 $this->pdf->SetXY($xPos + $width, $yPos);
-    //             }
-    
-    //             // Calcular la altura máxima de la fila
-    //             $maxHeight = max($cellHeights);
-    
-    //             // Segunda pasada: dibujar cada celda con la altura máxima
-                
-    //             // Mover a la siguiente línea con la altura máxima
-    //             $this->pdf->Ln($maxHeight);
-    //         }
-    //     }
-    // }
+        
 
        
         if (!empty($datos['cobertura_servicio']) && is_array($datos['cobertura_servicio'])) {
@@ -463,17 +414,32 @@ public function actualizarFechaReporte(Request $request)
 
          // Contenido
          // Sumar las columnas 3 y 4
-         $sumaCol3 = 0;
-         $sumaCol4 = 0;
- 
-         foreach ([$datos['ronda_vigilancia'] ]as $row) {
-             if (isset($row[1])) {
-                 $sumaCol3 += (int)$row[1]; // Columna 3
-             }
-             if (isset($row[2])) {
-                 $sumaCol4 += (int)$row[2]; // Columna 4
-             }
-         }
+
+         if (isset($datos['ronda_vigilancia']) && is_string($datos['ronda_vigilancia'])) {
+            // Convertir la cadena JSON en un array asociativo
+            $ronda_vigilancia = json_decode($datos['ronda_vigilancia'], true);
+        }
+        
+        // Inicializar las variables para la suma de las columnas
+        $sumaCol3 = 0; // Suma de 'rondas_generadas'
+        $sumaCol4 = 0; // Suma de 'num_marcaciones'
+        
+        // Verificar si $ronda_vigilancia es un array antes de iterar
+        if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
+            foreach ($ronda_vigilancia as $row) {
+                // Verificar si 'rondas_generadas' está presente en el elemento
+                if (isset($row['rondas_generadas'])) {
+                    $sumaCol3 += (int)$row['rondas_generadas']; // Sumar 'rondas_generadas'
+                }
+                // Verificar si 'num_marcaciones' está presente en el elemento
+                if (isset($row['num_marcaciones'])) {
+                    $sumaCol4 += (int)$row['num_marcaciones']; // Sumar 'num_marcaciones'
+                }
+        
+                
+            }
+        }
+         
 
          $this->pdf->SetFont('Arial', 'B', 11);
          $this->pdf->Cell(190, 10, utf8_decode('2.2.	RONDAS DE VIGILANCIA:'), 0, 1, 'L');
@@ -510,45 +476,40 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->SetFont('Arial', '', 8);
 
          
+    
 
-
-        if (!empty($datos['ronda_vigilancia']) && is_array($datos['ronda_vigilancia'])) {
-            foreach ([$datos['ronda_vigilancia']] as $row) {
-                $this->pdf->SetX($margenOriginal);
-        
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
-        
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
-        
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
-        
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
-            }
-        }
+         // Restaurar color
+         $this->pdf->SetFillColor(224, 235, 255);
+         $this->pdf->SetTextColor(0, 0, 0);
+         $this->pdf->SetFont('Arial', '', 8);
 
       
-        $this->pdf->SetX($margenOriginal);
 
-       
+        $this->pdf->SetX($margenOriginal); // Salto de línea para el pie de tabla
 
-        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+// Verificar si $ronda_vigilancia es un array antes de iterar
+if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
+    foreach ($ronda_vigilancia as $row) {
+        $this->pdf->Cell(40, 10, $row['tx_localidad'], 1, 0, 'C');  // Columna Titulo
+        $this->pdf->Cell(30, 10, $row['rondas_generadas'], 1, 0, 'C');  // Columna 'rondas_generadas'
+        $this->pdf->Cell(40, 10, $row['num_marcaciones'], 1, 0, 'C');  // Columna 'num_marcaciones'
+        $this->pdf->Ln(); 
+        $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
+    }
+}
 
-        // Pie de tabla
-        $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
-        $this->pdf->Cell(30, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
-        $this->pdf->Cell(40, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
+// Después de completar el bucle, imprimimos el total general
 
+$this->pdf->SetX($margenOriginal);
+$this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
+
+// Pie de tabla con los totales
+$this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTAL GENERAL"
+$this->pdf->Cell(30, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3 (rondas_generadas)
+$this->pdf->Cell(40, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4 (num_marcaciones)
+
+$this->pdf->Ln();
+$this->pdf->SetX($margenOriginal);
 
         #------------------TABLA 3 -------------------------
 
@@ -561,26 +522,26 @@ public function actualizarFechaReporte(Request $request)
          $sumaCol6 = 0;
          $sumaCol7 = 0;
  
-         foreach ([$datos['control_acceso']] as $row) {
-             if (isset($row[1])) {
-                 $sumaCol3 += (int)$row[1]; // Columna 3
-             }
-             if (isset($row[2])) {
-                 $sumaCol4 += (int)$row[2]; // Columna 4
-             }
-             if (isset($row[3])) {
-                 $sumaCol5 += (int)$row[3]; // Columna 4
-             }
-             if (isset($row[4])) {
-                 $sumaCol6 += (int)$row[4]; // Columna 4
-             }
+        //  foreach ([$datos['control_acceso']] as $row) {
+        //      if (isset($row[1])) {
+        //          $sumaCol3 += (int)$row[1]; // Columna 3
+        //      }
+        //      if (isset($row[2])) {
+        //          $sumaCol4 += (int)$row[2]; // Columna 4
+        //      }
+        //      if (isset($row[3])) {
+        //          $sumaCol5 += (int)$row[3]; // Columna 4
+        //      }
+        //      if (isset($row[4])) {
+        //          $sumaCol6 += (int)$row[4]; // Columna 4
+        //      }
  
-             if (isset($row[5])) {
-                 $sumaCol7 += (int)$row[5]; // Columna 4
-             }
+        //      if (isset($row[5])) {
+        //          $sumaCol7 += (int)$row[5]; // Columna 4
+        //      }
  
              
-         }
+        //  }
 
 
         $this->pdf->Ln();
@@ -620,28 +581,57 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['control_acceso']) && is_array($datos['control_acceso'])) {
-            foreach ([$datos['control_acceso']] as $row) {
-                $this->pdf->SetX($margenOriginal);
+        // if (!empty($datos['control_acceso']) && is_array($datos['control_acceso'])) {
+        //     foreach ([$datos['control_acceso']] as $row) {
+        //         $this->pdf->SetX($margenOriginal);
         
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
+        //         // Calcular alturas de las celdas
+        //         $cellHeights = [];
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $cellHeights[] = $this->getCellHeight($value, $width);
+        //         }
         
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
+        //         // Obtener la altura máxima para la fila
+        //         $maxHeight = max($cellHeights);
         
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
+        //         // Dibujar las celdas con la altura máxima
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+        //         }
         
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
+        //         // Mover a la siguiente línea
+        //         $this->pdf->Ln($maxHeight);
+        //     }
+        // }
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+        
+        if (isset($datos['control_acceso']) && is_string($datos['control_acceso'])) {
+           // Convertir la cadena en un array, separando por coma
+           $control_acceso = json_decode($datos['control_acceso'], true);
+          
+
+       }
+
+       $this->pdf->SetX($margenOriginal);
+        //'SITIO', 'EMPLEADOS', 'VISITANTES', 'PROVEEDORES', 'CLIENTES', 'TOTAL'
+  
+       if (isset($control_acceso) && is_array($control_acceso)) {
+            foreach ($control_acceso as $row) {
+                
+                $this->pdf->Cell(75, 10, $row['tx_localidad'], 1, 0, 'C');  // Columna Titulo
+                $this->pdf->Cell(30, 10, $row['id_empleado'], 1, 0, 'C');  // Columna Frecuencia
+                $this->pdf->Cell(90, 10, $row['id_visitante'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(90, 10, $row['empresa'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(90, 10, $row['tx_cliente'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(90, 10, $row['id_visitante'], 1, 'J');  // Columna Recomenda
+                 $this->pdf->SetX($margenOriginal);
             }
         }
 
@@ -787,11 +777,11 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
          $sumaCol = 0;
 
 
-         foreach ([$datos['incidencia_seguridad']] as $row) {
-             if (isset($row[4])) {
-                 $sumaCol += (int)$row[4]; // Columna 3
-             }
-         }
+        //  foreach ([$datos['incidencia_seguridad']] as $row) {
+        //      if (isset($row[4])) {
+        //          $sumaCol += (int)$row[4]; // Columna 3
+        //      }
+        //  }
 
         $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFont('Arial', 'B', 11);
@@ -835,33 +825,62 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['incidencia_seguridad']) && is_array($datos['incidencia_seguridad'])) {
-            foreach ([$datos['incidencia_seguridad']] as $row) {
-                $this->pdf->SetX($margenOriginal);
+        // if (!empty($datos['incidencia_seguridad']) && is_array($datos['incidencia_seguridad'])) {
+        //     foreach ([$datos['incidencia_seguridad']] as $row) {
+        //         $this->pdf->SetX($margenOriginal);
         
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
+        //         // Calcular alturas de las celdas
+        //         $cellHeights = [];
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $cellHeights[] = $this->getCellHeight($value, $width);
+        //         }
         
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
+        //         // Obtener la altura máxima para la fila
+        //         $maxHeight = max($cellHeights);
         
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
+        //         // Dibujar las celdas con la altura máxima
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+        //         }
         
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
-            }
-        }
+        //         // Mover a la siguiente línea
+        //         $this->pdf->Ln($maxHeight);
+        //     }
+        // }
+
+        // Restaurar color
+        $this->pdf->SetFillColor(224, 235, 255);
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->SetFont('Arial', '', 8);
+
+        
+        if (isset($datos['novedades_reportadas']) && is_string($datos['novedades_reportadas'])) {
+           // Convertir la cadena en un array, separando por coma
+           $novedades_reportadas = json_decode($datos['novedades_reportadas'], true);
+          
+
+       }
+
+       //'SITIO','INCIDENTES','HALLAZGOS','NOVEDADES DEL SITIO','TOTAL NOVEDADES REPORTADAS EN PROTEAPP'
 
     
         $this->pdf->SetX($margenOriginal);
+
+      
+  
+       if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+            foreach ($novedades_reportadas as $row) {
+                
+                $this->pdf->Cell(75, 10, $row['id_localidad'], 1, 0, 'C');  // Columna Titulo
+                $this->pdf->Cell(30, 10, $row['titulo'], 1, 0, 'C');  // Columna Frecuencia
+                $this->pdf->Cell(90, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(90, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(90, 10, $row['tipo_protemaxi'], 1, 'J');  // Columna Recomenda
+                $this->pdf->SetX($margenOriginal);
+            }
+        }
 
        
 
@@ -922,30 +941,30 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetFont('Arial', '', 8);
 
 
-        if (!empty($datos['novedades_reportadas']) && is_array($datos['novedades_reportadas'])) {
-            foreach ([$datos['novedades_reportadas'] ]as $row) {
-                $this->pdf->SetX($margenOriginal);
+        // if (!empty($datos['novedades_reportadas']) && is_array($datos['novedades_reportadas'])) {
+        //     foreach ([$datos['novedades_reportadas'] ]as $row) {
+        //         $this->pdf->SetX($margenOriginal);
         
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
+        //         // Calcular alturas de las celdas
+        //         $cellHeights = [];
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $cellHeights[] = $this->getCellHeight($value, $width);
+        //         }
         
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
+        //         // Obtener la altura máxima para la fila
+        //         $maxHeight = max($cellHeights);
         
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
+        //         // Dibujar las celdas con la altura máxima
+        //         foreach ($w as $index => $width) {
+        //             $value = isset($row[$index]) ? $row[$index] : '';
+        //             $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+        //         }
         
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
-            }
-        }
+        //         // Mover a la siguiente línea
+        //         $this->pdf->Ln($maxHeight);
+        //     }
+        // }
 
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
