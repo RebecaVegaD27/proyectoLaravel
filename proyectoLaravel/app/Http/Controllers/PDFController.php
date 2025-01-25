@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Control;
 use App\Models\Detalle;
+use App\Models\Novedad;
 use App\Models\Recomendacion;
+use App\Models\Ronda;
 use Illuminate\Http\Request;
 use FPDF;
 
@@ -60,6 +63,38 @@ public function actualizarFechaReporte(Request $request)
 
          // Si quieres devolver los datos como JSON (ideal para API)
          return response()->json($recomendaciones); 
+    }
+
+
+    public function control ()
+    {
+        // Lógica que deseas ejecutar cuando se haga la solicitud GET
+         // Obtener todos los registros de la tabla novedades
+         $control = Control::all();
+
+         // Si quieres devolver los datos como JSON (ideal para API)
+         return response()->json($control); 
+    }
+
+
+    public function novedades ()
+    {
+        // Lógica que deseas ejecutar cuando se haga la solicitud GET
+         // Obtener todos los registros de la tabla novedades
+         $novedades = Novedad::all();
+
+         // Si quieres devolver los datos como JSON (ideal para API)
+         return response()->json($novedades); 
+    }
+
+    public function rondas ()
+    {
+        // Lógica que deseas ejecutar cuando se haga la solicitud GET
+         // Obtener todos los registros de la tabla novedades
+         $rondas = Ronda::all();
+
+         // Si quieres devolver los datos como JSON (ideal para API)
+         return response()->json($rondas); 
     }
     
     

@@ -146,6 +146,45 @@
     </div>
 
     <script>
+
+        let rondasJSON = [];
+
+        // Obtener las recomendaciones
+        fetch('/rondas')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+                rondasJSON = data;
+                print("rondas", data)
+            })
+            .catch(error => {
+                console.error('Error al obtener rondasJSON:', error);
+            });
+
+        let novedadesJSON = [];
+
+        // Obtener las recomendaciones
+        fetch('/novedades')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+                novedadesJSON = data;
+                print("novedades", data)
+            })
+            .catch(error => {
+                console.error('Error al obtener novedadesJSON:', error);
+            });
+    
+        let controlJSON = [];
+
+        // Obtener las recomendaciones
+        fetch('/control')
+            .then(response => response.json())  // Convertir la respuesta en formato JSON
+            .then(data => {
+                controlJSON = data;
+                print("control", data)
+            })
+            .catch(error => {
+                console.error('Error al obtener control:', error);
+            });
         // Variable para almacenar las recomendaciones
         let recomendacionesJSON = [];
 
