@@ -154,7 +154,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 rondasJSON = data;
-                print("rondas", data)
+                
             })
             .catch(error => {
                 console.error('Error al obtener rondasJSON:', error);
@@ -167,7 +167,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 novedadesJSON = data;
-                print("novedades", data)
+                
             })
             .catch(error => {
                 console.error('Error al obtener novedadesJSON:', error);
@@ -180,7 +180,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 controlJSON = data;
-                print("control", data)
+                
             })
             .catch(error => {
                 console.error('Error al obtener control:', error);
@@ -193,7 +193,7 @@
             .then(response => response.json())  // Convertir la respuesta en formato JSON
             .then(data => {
                 recomendacionesJSON = data;
-                print("recomendaciones aqui", data)
+                
             })
             .catch(error => {
                 console.error('Error al obtener las recomendaciones:', error);
