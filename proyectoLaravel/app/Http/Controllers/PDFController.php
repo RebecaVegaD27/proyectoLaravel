@@ -512,7 +512,12 @@ $this->pdf->Ln();
 $this->pdf->SetX($margenOriginal);
 
         #------------------TABLA 3 -------------------------
-
+        if (isset($datos['control_acceso']) && is_string($datos['control_acceso'])) {
+            // Convertir la cadena en un array, separando por coma
+            $control_acceso = json_decode($datos['control_acceso'], true);
+           
+ 
+        }
 
         // Contenido
          // Sumar las columnas 3 y 4
@@ -522,26 +527,26 @@ $this->pdf->SetX($margenOriginal);
          $sumaCol6 = 0;
          $sumaCol7 = 0;
  
-        //  foreach ([$datos['control_acceso']] as $row) {
-        //      if (isset($row[1])) {
-        //          $sumaCol3 += (int)$row[1]; // Columna 3
-        //      }
-        //      if (isset($row[2])) {
-        //          $sumaCol4 += (int)$row[2]; // Columna 4
-        //      }
-        //      if (isset($row[3])) {
-        //          $sumaCol5 += (int)$row[3]; // Columna 4
-        //      }
-        //      if (isset($row[4])) {
-        //          $sumaCol6 += (int)$row[4]; // Columna 4
-        //      }
+         foreach ([$datos['control_acceso']] as $row) {
+             if (isset($row[1])) {
+                 $sumaCol3 += (int)$row[1]; // Columna 3
+             }
+             if (isset($row[2])) {
+                 $sumaCol4 += (int)$row[2]; // Columna 4
+             }
+             if (isset($row[3])) {
+                 $sumaCol5 += (int)$row[3]; // Columna 4
+             }
+             if (isset($row[4])) {
+                 $sumaCol6 += (int)$row[4]; // Columna 4
+             }
  
-        //      if (isset($row[5])) {
-        //          $sumaCol7 += (int)$row[5]; // Columna 4
-        //      }
+             if (isset($row[5])) {
+                 $sumaCol7 += (int)$row[5]; // Columna 4
+             }
  
              
-        //  }
+         }
 
 
         $this->pdf->Ln();
@@ -560,7 +565,7 @@ $this->pdf->SetX($margenOriginal);
 
         // Cabecera de la tabla
         $header = array('SITIO', 'EMPLEADOS', 'VISITANTES', 'PROVEEDORES', 'CLIENTES', 'TOTAL');
-        $w = array(40, 30, 30, 30, 30, 30);
+        $w = array(45, 25, 25, 30, 30, 30);
 
         // Color de fondo de la cabecera (negro)
         $this->pdf->SetFillColor(0, 0, 0);
@@ -612,12 +617,7 @@ $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFont('Arial', '', 8);
 
         
-        if (isset($datos['control_acceso']) && is_string($datos['control_acceso'])) {
-           // Convertir la cadena en un array, separando por coma
-           $control_acceso = json_decode($datos['control_acceso'], true);
-          
-
-       }
+        
 
        $this->pdf->SetX($margenOriginal);
         //'SITIO', 'EMPLEADOS', 'VISITANTES', 'PROVEEDORES', 'CLIENTES', 'TOTAL'
@@ -625,12 +625,19 @@ $this->pdf->SetX($margenOriginal);
        if (isset($control_acceso) && is_array($control_acceso)) {
             foreach ($control_acceso as $row) {
                 
-                $this->pdf->Cell(75, 10, $row['tx_localidad'], 1, 0, 'C');  // Columna Titulo
-                $this->pdf->Cell(30, 10, $row['id_empleado'], 1, 0, 'C');  // Columna Frecuencia
-                $this->pdf->Cell(90, 10, $row['id_visitante'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(90, 10, $row['empresa'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(90, 10, $row['tx_cliente'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(90, 10, $row['id_visitante'], 1, 'J');  // Columna Recomenda
+                $this->pdf->Cell(45, 10, $row['tx_localidad'], 1, 0, 'C');  
+                $this->pdf->Cell(25, 10, $row['id_empleado'], 1, 0, 'C');  
+                $this->pdf->Cell(25, 10, $row['id_visitante'], 1, 0, 'C');  
+                $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
+                $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
+                 // Sumar los valores de las celdas (asegurándote de que sean números)
+        $total = (float)$row['id_empleado'] + (float)$row['id_visitante'] + (float)$row['id_cliente'] + (float)$row['id_cliente']; 
+
+        // Imprimir el total en la última columna
+        $this->pdf->Cell(30, 10, number_format($total, 2), 1, 0, 'C');  // Columna TOTAL con el valor calculado
+
+        // Salto de línea para la siguiente fila
+        $this->pdf->Ln();
                  $this->pdf->SetX($margenOriginal);
             }
         }
@@ -643,9 +650,9 @@ $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
         // Pie de tabla
-        $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
-        $this->pdf->Cell(30, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
-        $this->pdf->Cell(30, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
+        $this->pdf->Cell(45, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
+        $this->pdf->Cell(25, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
+        $this->pdf->Cell(25, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
         $this->pdf->Cell(30, 5, $sumaCol5, 1, 0, 'C', true); // Suma de la columna 4
         $this->pdf->Cell(30, 5, $sumaCol6, 1, 0, 'C', true); // Suma de la columna 4
         $this->pdf->Cell(30, 5, $sumaCol7, 1, 0, 'C', true); // Suma de la columna 4
