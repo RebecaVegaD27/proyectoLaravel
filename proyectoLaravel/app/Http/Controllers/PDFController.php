@@ -616,7 +616,44 @@ $this->pdf->SetX($margenOriginal);
                 $sumaCol7 += $sumaCol6 + $sumaCol5 + $sumaCol4 + $sumaCol3; // Sumar el valor de la columna 7
             }
         }
+
+
+        //----------------control de acceso
+        $totalesGenerales = 0;
+        if (isset($control_acceso) && is_array($control_acceso)) {
+            // Convertir el array a una colección para usar las funciones de Laravel
+            $controlAcceso = collect($control_acceso);
         
+            // Agrupar por id_localidad
+            $agrupadoPorLocalidad = $controlAcceso->groupBy('id_localidad');
+        
+            // Inicializar las variables para los totales generales
+            $totalEmpleado = 0;
+            $totalVisitante = 0;
+            $totalCliente = 0;
+            $totalEmpresa = 0;
+        
+            // Recorrer los grupos agrupados por id_localidad
+            foreach ($agrupadoPorLocalidad as $idLocalidad => $grupo) {
+                // Realizar el count distinct de los campos para cada grupo
+                $countEmpleado = $grupo->pluck('id_empleado')->unique()->count();
+                $countVisitante = $grupo->pluck('id_visitante')->unique()->count();
+                $countCliente = $grupo->pluck('id_cliente')->unique()->count();
+                $countEmpresa = $grupo->pluck('empresa')->unique()->count();
+        
+                // Sumar los totales generales
+                $totalEmpleado += $countEmpleado;
+                $totalVisitante += $countVisitante;
+                $totalCliente += $countCliente;
+                $totalEmpresa += $countEmpresa;
+            }
+        
+            // Retornar los totales generales
+            $totalesGenerales = $totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa;
+        
+            
+        }
+                
         
 
 
@@ -626,7 +663,7 @@ $this->pdf->SetX($margenOriginal);
         $this->pdf->Cell(190, 10, utf8_decode('2.3.	CONTROL DE ACCESOS:'), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se gestionaron un total de ' . $sumaCol7 . ' registros de control de accesos de empleados, visitantes, proveedores, y clientes, en las distintas instalaciones ingresados en nuestro sistema PROTEAPP®.  El proceso de control incluyó la verificación de identidades y la inspección de vehículos conforme a los procedimientos establecidos, garantizando el cumplimiento de las políticas de seguridad de ' . $datos['cliente'] . ' .'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Se gestionaron un total de ' . $totalesGenerales . ' registros de control de accesos de empleados, visitantes, proveedores, y clientes, en las distintas instalaciones ingresados en nuestro sistema PROTEAPP®.  El proceso de control incluyó la verificación de identidades y la inspección de vehículos conforme a los procedimientos establecidos, garantizando el cumplimiento de las políticas de seguridad de ' . $datos['cliente'] . ' .'), 0, 'J');
 
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
@@ -794,12 +831,14 @@ $this->pdf->SetX($margenOriginal);
         // Mostrar los totales generales al pie de la tabla
         $this->pdf->SetXY($margenOriginal, $this->pdf->GetY()); // Ajustar la posición para los totales
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
-        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C'); // Columna de "Totales"
-        $this->pdf->Cell($colWidths[1], 10, number_format($totalEmpleado, 0), 1, 0, 'C');
-        $this->pdf->Cell($colWidths[2], 10, number_format($totalVisitante, 0), 1, 0, 'C');
-        $this->pdf->Cell($colWidths[3], 10, number_format($totalEmpresa, 0), 1, 0, 'C');
-        $this->pdf->Cell($colWidths[4], 10, number_format($totalCliente, 0), 1, 0, 'C');
-        $this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 2), 1, 0, 'C'); // Total general de todas las columnas
+       
+        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1); // Agregar 1 al parámetro fill
+$this->pdf->Cell($colWidths[1], 10, number_format($totalEmpleado, 0), 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[2], 10, number_format($totalVisitante, 0), 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[3], 10, number_format($totalEmpresa, 0), 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[4], 10, number_format($totalCliente, 0), 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 2), 1, 0, 'C', 1);
+
         
         // El salto de línea final
         $this->pdf->Ln(10);
