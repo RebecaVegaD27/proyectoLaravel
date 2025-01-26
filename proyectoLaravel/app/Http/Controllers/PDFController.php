@@ -248,7 +248,8 @@ public function actualizarFechaReporte(Request $request)
 
         $this->pdf->Cell(40, $lineHeight, 'DESTINATARIOS:', 0, 0, 'L');
         $this->pdf->SetFont('Arial', 'B', 9);
-        $this->pdf->Cell(0, $lineHeight, utf8_decode($datos['destinatario']), 1, 1, 'L');
+        $this->pdf->Cell(0, $lineHeight, 'DANIEL PINTADO', 1, 1, 'L');
+        // utf8_decode($datos['destinatario'])
 
         $this->pdf->Ln(3);
 
@@ -486,17 +487,77 @@ public function actualizarFechaReporte(Request $request)
       
 
         $this->pdf->SetX($margenOriginal); // Salto de línea para el pie de tabla
-
+//SI VALE
 // Verificar si $ronda_vigilancia es un array antes de iterar
+// if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
+//     foreach ($ronda_vigilancia as $row) {
+//         $this->pdf->Cell(40, 10, $row['tx_localidad'], 1, 0, 'C');  // Columna Titulo
+//         $this->pdf->Cell(30, 10, $row['rondas_generadas'], 1, 0, 'C');  // Columna 'rondas_generadas'
+//         $this->pdf->Cell(40, 10, $row['num_marcaciones'], 1, 0, 'C');  // Columna 'num_marcaciones'
+//         $this->pdf->Ln(); 
+//         $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
+//     }
+// }
+
 if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
-    foreach ($ronda_vigilancia as $row) {
-        $this->pdf->Cell(40, 10, $row['tx_localidad'], 1, 0, 'C');  // Columna Titulo
-        $this->pdf->Cell(30, 10, $row['rondas_generadas'], 1, 0, 'C');  // Columna 'rondas_generadas'
-        $this->pdf->Cell(40, 10, $row['num_marcaciones'], 1, 0, 'C');  // Columna 'num_marcaciones'
-        $this->pdf->Ln(); 
-        $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
+    // Convertir el array a una colección para usar las funciones de Laravel
+    $rondas = collect($ronda_vigilancia);
+
+    // Agrupar por id_localidad
+    $rondasAgrupadas = $rondas->groupBy('id_localidad');
+
+    // Definir los anchos de las columnas
+    $colWidths = [40, 30, 40]; // Ajusta estos valores según el diseño
+
+    // Recorrer los grupos de rondas agrupados por id_localidad
+    foreach ($rondasAgrupadas as $idLocalidad => $grupo) {
+        // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
+        $txtLocalidad = $grupo->first()['tx_localidad'];
+
+        // Sumar los valores de num_marcaciones y rondas_generadas
+        $sumNumMarcaciones = $grupo->sum('num_marcaciones'); // Sumar num_marcaciones
+        $sumRondasGeneradas = $grupo->sum('rondas_generadas'); // Sumar rondas_generadas
+
+        // Crear el array con los datos a mostrar
+        $data = [
+            $txtLocalidad,  // Mostrar txt_localidad en lugar de id_localidad
+            $sumRondasGeneradas,  // Sumar las rondas_generadas para esta localidad
+            $sumNumMarcaciones,  // Sumar las num_marcaciones para esta localidad
+        ];
+
+        // Calcular la altura máxima de la fila
+        $maxHeight = 0;
+        foreach ($data as $index => $content) {
+            // Estimar el número de líneas necesarias para el contenido
+            $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+            $lineCount = ceil($lineCount); // Redondear hacia arriba
+            $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+            $maxHeight = max($maxHeight, $cellHeight); 
+            $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+        }
+
+        // Dibujar las celdas de la fila con la misma altura máxima
+        foreach ($data as $index => $content) {
+            $x = $this->pdf->GetX(); // Posición X actual
+            $y = $this->pdf->GetY(); // Posición Y actual
+
+            // Dibujar un rectángulo para el borde de la celda
+            $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+
+            // Escribir el contenido dentro de la celda con MultiCell
+            $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+
+            // Volver a la posición derecha para la siguiente celda
+            $this->pdf->SetXY($x + $colWidths[$index], $y);
+        }
+
+        // Saltar a la siguiente fila
+        $this->pdf->Ln($maxHeight);
+        $this->pdf->SetX($margenOriginal);
     }
 }
+
+
 
 // Después de completar el bucle, imprimimos el total general
 
@@ -964,31 +1025,159 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
     //     }
     // }
     
+
+    //este si vale
+    // if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+    //     // Definir los anchos de las columnas
+    //     $colWidths = [40, 20, 20, 45, 70]; // Ajusta estos valores según el diseño
+       
+    //     // Recorrer los datos para mostrar filas
+    //     foreach ($novedades_reportadas as $row) {
+    //         // Almacenar el contenido de cada columna en un arreglo
+    //         $data = [
+    //             $row['txt_localidad'],
+    //             $row['titulo'],
+    //             $row['TIPO_NOVEDAD'],
+    //             $row['tipo_hallazgo'],
+    //             $row['tipo_protemaxi'],
+           
+    //         ];
+    
+    //         // Calcular la altura máxima de la fila
+    //         $maxHeight = 0;
+    //         foreach ($data as $index => $content) {
+    //             // Estimar el número de líneas necesarias para el contenido
+    //             $lineCount = $this->pdf->GetStringWidth($content) / $colWidths[$index];
+    //             $lineCount = ceil($lineCount); // Redondear hacia arriba
+    //             $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+    //             $maxHeight = max($maxHeight, $cellHeight); 
+    //             $maxHeight= $maxHeight + 1 ;// Tomar la altura máxima
+    //         }
+    
+    //         // Dibujar las celdas de la fila con la misma altura máxima
+    //         foreach ($data as $index => $content) {
+    //             $x = $this->pdf->GetX(); // Posición X actual
+    //             $y = $this->pdf->GetY(); // Posición Y actual
+    
+    //             // Dibujar un rectángulo para el borde de la celda
+    //             $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+    
+    //             // Escribir el contenido dentro de la celda con MultiCell
+    //             $this->pdf->MultiCell($colWidths[$index], 5, $content, 0, 'L');
+    
+    //             // Volver a la posición derecha para la siguiente celda
+    //             $this->pdf->SetXY($x + $colWidths[$index], $y);
+    //         }
+    
+    //         // Saltar a la siguiente fila
+    //         $this->pdf->Ln($maxHeight);
+    //         $this->pdf->SetX($margenOriginal);
+    //     }
+    // }
+
+
+    // if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+    //     // Convertir el array a una colección para usar las funciones de Laravel
+    //     $novedades = collect($novedades_reportadas);
+        
+    //     // Agrupar por id_localidad
+    //     $novedadesAgrupadas = $novedades->groupBy('id_localidad');
+        
+    //     // Definir los anchos de las columnas
+    //     $colWidths = [40, 20, 20, 45, 70]; // Ajusta estos valores según el diseño
+    
+    //     // Recorrer los grupos de novedades agrupados por id_localidad
+    //     foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
+    //         // Contar los valores no vacíos en cada campo
+    //         $countTitulo = $grupo->whereNotNull('titulo')->count();
+    //         $countTipoNovedad = $grupo->whereNotNull('TIPO_NOVEDAD')->count();
+    //         $countTipoHallazgo = $grupo->whereNotNull('tipo_hallazgo')->count();
+    
+    //         // Calcular la suma de los tres conteos
+    //         $totalCount = $countTitulo + $countTipoNovedad + $countTipoHallazgo;
+    
+    //         // Crear el array con los datos a mostrar
+    //         $data = [
+    //             $idLocalidad,  // Mostrar el id_localidad
+    //             $countTitulo,  // Contar cuántos títulos existen en esta localidad
+    //             $countTipoNovedad,  // Contar cuántos TIPO_NOVEDAD existen en esta localidad
+    //             $countTipoHallazgo,  // Contar cuántos tipo_hallazgo existen en esta localidad
+    //             $totalCount  // Mostrar la suma total
+    //         ];
+    
+    //         // Calcular la altura máxima de la fila
+    //         $maxHeight = 0;
+    //         foreach ($data as $index => $content) {
+    //             // Estimar el número de líneas necesarias para el contenido
+    //             $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+    //             $lineCount = ceil($lineCount); // Redondear hacia arriba
+    //             $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+    //             $maxHeight = max($maxHeight, $cellHeight); 
+    //             $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+    //         }
+    
+    //         // Dibujar las celdas de la fila con la misma altura máxima
+    //         foreach ($data as $index => $content) {
+    //             $x = $this->pdf->GetX(); // Posición X actual
+    //             $y = $this->pdf->GetY(); // Posición Y actual
+    
+    //             // Dibujar un rectángulo para el borde de la celda
+    //             $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+    
+    //             // Escribir el contenido dentro de la celda con MultiCell
+    //             $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'L');
+    
+    //             // Volver a la posición derecha para la siguiente celda
+    //             $this->pdf->SetXY($x + $colWidths[$index], $y);
+    //         }
+    
+    //         // Saltar a la siguiente fila
+    //         $this->pdf->Ln($maxHeight);
+    //         $this->pdf->SetX($margenOriginal);
+    //     }
+    // }
+    
     if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+        // Convertir el array a una colección para usar las funciones de Laravel
+        $novedades = collect($novedades_reportadas);
+        
+        // Agrupar por id_localidad
+        $novedadesAgrupadas = $novedades->groupBy('id_localidad');
+        
         // Definir los anchos de las columnas
         $colWidths = [40, 20, 20, 45, 70]; // Ajusta estos valores según el diseño
-       
-        // Recorrer los datos para mostrar filas
-        foreach ($novedades_reportadas as $row) {
-            // Almacenar el contenido de cada columna en un arreglo
+    
+        // Recorrer los grupos de novedades agrupados por id_localidad
+        foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
+            // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
+            $txtLocalidad = $grupo->first()['txt_localidad'];
+    
+            // Contar los valores no vacíos en cada campo
+            $countTitulo = $grupo->whereNotNull('titulo')->count();
+            $countTipoNovedad = $grupo->whereNotNull('TIPO_NOVEDAD')->count();
+            $countTipoHallazgo = $grupo->whereNotNull('tipo_hallazgo')->count();
+    
+            // Calcular la suma de los tres conteos
+            $totalCount = $countTitulo + $countTipoNovedad + $countTipoHallazgo;
+    
+            // Crear el array con los datos a mostrar
             $data = [
-                $row['id_localidad'],
-                $row['titulo'],
-                $row['TIPO_NOVEDAD'],
-                $row['tipo_hallazgo'],
-                $row['tipo_protemaxi'],
-           
+                $txtLocalidad,  // Mostrar txt_localidad en lugar de id_localidad
+                $countTitulo,  // Contar cuántos títulos existen en esta localidad
+                $countTipoNovedad,  // Contar cuántos TIPO_NOVEDAD existen en esta localidad
+                $countTipoHallazgo,  // Contar cuántos tipo_hallazgo existen en esta localidad
+                $totalCount  // Mostrar la suma total
             ];
     
             // Calcular la altura máxima de la fila
             $maxHeight = 0;
             foreach ($data as $index => $content) {
                 // Estimar el número de líneas necesarias para el contenido
-                $lineCount = $this->pdf->GetStringWidth($content) / $colWidths[$index];
+                $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
                 $lineCount = ceil($lineCount); // Redondear hacia arriba
                 $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
                 $maxHeight = max($maxHeight, $cellHeight); 
-                $maxHeight= $maxHeight + 1 ;// Tomar la altura máxima
+                $maxHeight = $maxHeight + 1; // Tomar la altura máxima
             }
     
             // Dibujar las celdas de la fila con la misma altura máxima
@@ -1000,7 +1189,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
                 $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
     
                 // Escribir el contenido dentro de la celda con MultiCell
-                $this->pdf->MultiCell($colWidths[$index], 5, $content, 0, 'L');
+                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'L');
     
                 // Volver a la posición derecha para la siguiente celda
                 $this->pdf->SetXY($x + $colWidths[$index], $y);
