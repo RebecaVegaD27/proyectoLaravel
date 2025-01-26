@@ -693,40 +693,123 @@ $this->pdf->SetX($margenOriginal);
        $this->pdf->SetX($margenOriginal);
         //'SITIO', 'EMPLEADOS', 'VISITANTES', 'PROVEEDORES', 'CLIENTES', 'TOTAL'
   
-       if (isset($control_acceso) && is_array($control_acceso)) {
-            foreach ($control_acceso as $row) {
+    //    if (isset($control_acceso) && is_array($control_acceso)) {
+    //         foreach ($control_acceso as $row) {
                 
-                $this->pdf->Cell(45, 10, $row['tx_localidad'], 1, 0, 'C');  
-                $this->pdf->Cell(25, 10, $row['id_empleado'], 1, 0, 'C');  
-                $this->pdf->Cell(25, 10, $row['id_visitante'], 1, 0, 'C');  
-                $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
-                $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
-                 // Sumar los valores de las celdas (asegurándote de que sean números)
-        $total = (float)$row['id_empleado'] + (float)$row['id_visitante'] + (float)$row['id_cliente'] + (float)$row['id_cliente']; 
+    //             $this->pdf->Cell(45, 10, $row['tx_localidad'], 1, 0, 'C');  
+    //             $this->pdf->Cell(25, 10, $row['id_empleado'], 1, 0, 'C');  
+    //             $this->pdf->Cell(25, 10, $row['id_visitante'], 1, 0, 'C');  
+    //             $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
+    //             $this->pdf->Cell(30, 10, $row['id_cliente'], 1, 0, 'C');  
+    //              // Sumar los valores de las celdas (asegurándote de que sean números)
+    //     $total = (float)$row['id_empleado'] + (float)$row['id_visitante'] + (float)$row['id_cliente'] + (float)$row['id_cliente']; 
 
-        // Imprimir el total en la última columna
-        $this->pdf->Cell(30, 10, number_format($total, 2), 1, 0, 'C');  // Columna TOTAL con el valor calculado
+    //     // Imprimir el total en la última columna
+    //     $this->pdf->Cell(30, 10, number_format($total, 2), 1, 0, 'C');  // Columna TOTAL con el valor calculado
 
-        // Salto de línea para la siguiente fila
-        $this->pdf->Ln();
-                 $this->pdf->SetX($margenOriginal);
+    //     // Salto de línea para la siguiente fila
+    //     $this->pdf->Ln();
+    //              $this->pdf->SetX($margenOriginal);
+    //         }
+    if (isset($control_acceso) && is_array($control_acceso)) {
+        // Convertir el array a una colección para usar las funciones de Laravel
+        $controlAcceso = collect($control_acceso);
+    
+        // Agrupar por id_localidad
+        $agrupadoPorLocalidad = $controlAcceso->groupBy('id_localidad');
+    
+        // Definir los anchos de las columnas
+        $colWidths = [45, 25, 25, 30, 30, 30]; // Ajusta estos valores según el diseño
+    
+        // Inicializar las variables para los totales
+        $totalEmpleado = 0;
+        $totalVisitante = 0;
+        $totalCliente = 0;
+        $totalEmpresa = 0;
+        $totalFila = 0;  // Total por fila para cada grupo
+    
+        // Recorrer los grupos agrupados por id_localidad
+        foreach ($agrupadoPorLocalidad as $idLocalidad => $grupo) {
+            // Obtener el valor de txt_localidad del primer elemento del grupo (suponiendo que todos los elementos tienen el mismo valor para txt_localidad)
+            $txtLocalidad = $grupo->first()['tx_localidad'];
+    
+            // Realizar el count distinct de los campos
+            $countEmpleado = $grupo->pluck('id_empleado')->unique()->count();
+            $countVisitante = $grupo->pluck('id_visitante')->unique()->count();
+            $countCliente = $grupo->pluck('id_cliente')->unique()->count();
+            $countEmpresa = $grupo->pluck('empresa')->unique()->count();
+    
+            // Crear el array con los datos a mostrar
+            $data = [
+                $txtLocalidad,  // Mostrar txt_localidad en lugar de id_localidad
+                $countEmpleado,  // Contar distintos id_empleado
+                $countVisitante,  // Contar distintos id_visitante
+                $countEmpresa,  // Contar distintos empresa
+                $countCliente,  // Contar distintos id_cliente
+            ];
+    
+            // Calcular la altura máxima de la fila
+            $maxHeight = 0;
+            foreach ($data as $index => $content) {
+                // Estimar el número de líneas necesarias para el contenido
+                $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+                $lineCount = ceil($lineCount); // Redondear hacia arriba
+                $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+                $maxHeight = max($maxHeight, $cellHeight); 
+                $maxHeight = $maxHeight + 1; // Tomar la altura máxima
             }
+    
+            // Dibujar las celdas de la fila con la misma altura máxima
+            foreach ($data as $index => $content) {
+                $x = $this->pdf->GetX(); // Posición X actual
+                $y = $this->pdf->GetY(); // Posición Y actual
+    
+                // Dibujar un rectángulo para el borde de la celda
+                $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+    
+                // Escribir el contenido dentro de la celda con MultiCell
+                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+    
+                // Volver a la posición derecha para la siguiente celda
+                $this->pdf->SetXY($x + $colWidths[$index], $y);
+            }
+    
+            // Calcular el total de esta fila (sumando todas las columnas)
+            $totalFila = $countEmpleado + $countVisitante + $countEmpresa + $countCliente;
+    
+            // Mostrar el total de la fila en la última columna
+            $this->pdf->Cell($colWidths[count($data)], 10, number_format($totalFila, 2), 1, 0, 'C');
+    
+            // Sumar los totales generales
+            $totalEmpleado += $countEmpleado;
+            $totalVisitante += $countVisitante;
+            $totalCliente += $countCliente;
+            $totalEmpresa += $countEmpresa;
+    
+            // Saltar a la siguiente fila
+            $this->pdf->Ln($maxHeight);
+            $this->pdf->SetX($margenOriginal);
         }
+    
+        // Mostrar los totales generales al pie de la tabla
+        $this->pdf->SetXY($margenOriginal, $this->pdf->GetY()); // Ajustar la posición para los totales
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
+        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C'); // Columna de "Totales"
+        $this->pdf->Cell($colWidths[1], 10, number_format($totalEmpleado, 0), 1, 0, 'C');
+        $this->pdf->Cell($colWidths[2], 10, number_format($totalVisitante, 0), 1, 0, 'C');
+        $this->pdf->Cell($colWidths[3], 10, number_format($totalEmpresa, 0), 1, 0, 'C');
+        $this->pdf->Cell($colWidths[4], 10, number_format($totalCliente, 0), 1, 0, 'C');
+        $this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 2), 1, 0, 'C'); // Total general de todas las columnas
+        
+        // El salto de línea final
+        $this->pdf->Ln(10);
+    }
 
-      
-        $this->pdf->SetX($margenOriginal);
-
-       
-
-        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
-
-        // Pie de tabla
-        $this->pdf->Cell(45, 5, 'TOTAL GENERAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
-        $this->pdf->Cell(25, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
-        $this->pdf->Cell(25, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
-        $this->pdf->Cell(30, 5, $sumaCol5, 1, 0, 'C', true); // Suma de la columna 4
-        $this->pdf->Cell(30, 5, $sumaCol6, 1, 0, 'C', true); // Suma de la columna 4
-        $this->pdf->Cell(30, 5, $sumaCol7, 1, 0, 'C', true); // Suma de la columna 4
+     // Restaurar color
+     $this->pdf->SetFillColor(224, 235, 255);
+     $this->pdf->SetTextColor(0, 0, 0);
+     $this->pdf->SetFont('Arial', '', 8);
+    
 
 
         #-------------Tabla 4 ------------------
