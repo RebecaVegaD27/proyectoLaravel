@@ -887,18 +887,131 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
 
       
   
-       if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
-            foreach ($novedades_reportadas as $row) {
+    //    if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+    //         foreach ($novedades_reportadas as $row) {
                 
-                $this->pdf->Cell(40, 10, $row['id_localidad'], 1, 0, 'C');  // Columna Titulo
-                $this->pdf->Cell(20, 10, $row['titulo'], 1, 0, 'C');  // Columna Frecuencia
-                $this->pdf->Cell(20, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(45, 10, $row['detalle'], 1, 'J');  // Columna Recomenda
-                $this->pdf->Cell(70, 10, $row['tipo_protemaxi'], 1, 'J');  // Columna Recomenda
-                $this->pdf->SetX($margenOriginal);
-            }
-        }
+    //             $this->pdf->Cell(40, 10, $row['id_localidad'], 1, 0, 'C');  // Columna Titulo
+    //             $this->pdf->Cell(20, 10, $row['titulo'], 1, 0, 'C');  // Columna Frecuencia
+    //             $this->pdf->Cell(20, 10, $row['titulo'], 1, 'J');  // Columna Recomenda
+    //             $this->pdf->Cell(45, 10, $row['titulo'], 1, 'J');  // Columna Recomenda
+    //             $this->pdf->Cell(70, 10, $row['tipo_protemaxi'], 1, 'J');  // Columna Recomenda
+    //             $this->pdf->SetX($margenOriginal);
+    //         }
+    //     }
 
+
+    // if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+    //     foreach ($novedades_reportadas as $row) {
+    //         // Definir los anchos de las columnas
+    //         $colWidths = [40, 50, 50, 70];
+    //         $maxHeight = 10; // Altura inicial de la celda
+    
+    //         // Calcular la altura máxima de la fila según el contenido más largo
+    //         $maxHeight = max(
+    //             $this->pdf->GetStringWidth($row['id_localidad']) / $colWidths[0] * 10,
+    //             $this->pdf->GetStringWidth($row['titulo']) / $colWidths[1] * 10,
+    //             $this->pdf->GetStringWidth($row['tipo_protemaxi']) / $colWidths[3] * 10,
+    //         );
+    
+    //         // Obtener la altura máxima según el texto ajustado
+    //         $height = $maxHeight;
+    
+    //         // Primera columna (id_localidad)
+    //         $this->pdf->MultiCell($colWidths[0], $height, $row['id_localidad']);
+    //         $this->pdf->MultiCell($colWidths[0], $height, $row['titulo']);
+    //         $this->pdf->MultiCell($colWidths[0], $height, $row['titulo']);
+    //         $this->pdf->MultiCell($colWidths[0], $height, $row['titulo']);
+    
+    //  } }
+    
+        
+    // if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+    //     // Definir los anchos de las columnas
+    //     $colWidths = [40, 50, 50, 70, 30]; // Ajusta estos valores según el diseño
+        
+    
+    //     // Recorrer los datos para mostrar filas
+    //     foreach ($novedades_reportadas as $row) {
+    //         // Almacenar el contenido de cada columna en un arreglo
+
+    //         $data = [
+    //             $row['id_localidad'],
+    //             $row['titulo'],
+    //             $row['detalle'], 
+    //             $row['titulo'],
+    //             $row['tipo_protemaxi']
+    //         ];
+    
+    //         // Calcular la altura máxima de la fila basada en el contenido de las celdas
+    //         $maxHeight = 0;
+    //         foreach ($data as $index => $content) {
+    //             // Calcular la altura necesaria para cada celda
+    //             $lineCount = $this->pdf->GetStringWidth($content) / $colWidths[$index];
+    //             $cellHeight = ceil($lineCount) * 5; // Ajusta 5 según el espaciado deseado
+    //             $maxHeight = max($maxHeight, $cellHeight); // Tomar el máximo de todas las celdas
+    //         }
+    
+    //         // Dibujar las celdas de la fila con MultiCell
+    //         foreach ($data as $index => $content) {
+    //             $x = $this->pdf->GetX(); // Posición X actual
+    //             $y = $this->pdf->GetY(); // Posición Y actual
+    //             $this->pdf->MultiCell($colWidths[$index], 5, $content, 1, 'L'); // Celda con ajuste de texto
+    //             $this->pdf->SetXY($x + $colWidths[$index], $y); // Volver a la posición derecha para la siguiente celda
+    //         }
+    
+    //         $this->pdf->Ln($maxHeight); // Saltar a la siguiente fila
+    //         $this->pdf->SetX($margenOriginal);
+    //     }
+    // }
+    
+    if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+        // Definir los anchos de las columnas
+        $colWidths = [40, 20, 20, 45, 70]; // Ajusta estos valores según el diseño
+       
+        // Recorrer los datos para mostrar filas
+        foreach ($novedades_reportadas as $row) {
+            // Almacenar el contenido de cada columna en un arreglo
+            $data = [
+                $row['id_localidad'],
+                $row['titulo'],
+                $row['TIPO_NOVEDAD'],
+                $row['tipo_hallazgo'],
+                $row['tipo_protemaxi'],
+           
+            ];
+    
+            // Calcular la altura máxima de la fila
+            $maxHeight = 0;
+            foreach ($data as $index => $content) {
+                // Estimar el número de líneas necesarias para el contenido
+                $lineCount = $this->pdf->GetStringWidth($content) / $colWidths[$index];
+                $lineCount = ceil($lineCount); // Redondear hacia arriba
+                $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+                $maxHeight = max($maxHeight, $cellHeight); 
+                $maxHeight= $maxHeight + 1 ;// Tomar la altura máxima
+            }
+    
+            // Dibujar las celdas de la fila con la misma altura máxima
+            foreach ($data as $index => $content) {
+                $x = $this->pdf->GetX(); // Posición X actual
+                $y = $this->pdf->GetY(); // Posición Y actual
+    
+                // Dibujar un rectángulo para el borde de la celda
+                $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+    
+                // Escribir el contenido dentro de la celda con MultiCell
+                $this->pdf->MultiCell($colWidths[$index], 5, $content, 0, 'L');
+    
+                // Volver a la posición derecha para la siguiente celda
+                $this->pdf->SetXY($x + $colWidths[$index], $y);
+            }
+    
+            // Saltar a la siguiente fila
+            $this->pdf->Ln($maxHeight);
+            $this->pdf->SetX($margenOriginal);
+        }
+    }
+    
        
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
