@@ -983,12 +983,59 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         //      }
         //  }
 
+        if (isset($datos['novedades_reportadas']) && is_string($datos['novedades_reportadas'])) {
+            // Convertir la cadena en un array, separando por coma
+            $novedades_reportadas = json_decode($datos['novedades_reportadas'], true);
+           
+ 
+        }
+        
+
+        $totalGeneral = 0;
+
+        if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+            // Convertir el array a una colección para usar las funciones de Laravel
+            $novedades = collect($novedades_reportadas);
+            
+            // Agrupar por id_localidad
+            $novedadesAgrupadas = $novedades->groupBy('id_localidad');
+            
+            // Inicializar los totales
+            $totalTitulo = 0;
+            $totalTipoNovedad = 0;
+            $totalTipoHallazgo = 0;
+            $totalGeneral = 0; // Total general que suma las tres columnas
+            
+            // Recorrer los grupos de novedades agrupados por id_localidad
+            foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
+                // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
+                $txtLocalidad = $grupo->first()['txt_localidad'];
+            
+                // Contar los valores no vacíos en cada campo
+                $countTitulo = $grupo->whereNotNull('titulo')->count();
+                $countTipoNovedad = $grupo->whereNotNull('TIPO_NOVEDAD')->count();
+                $countTipoHallazgo = $grupo->whereNotNull('tipo_hallazgo')->count();
+            
+                // Calcular la suma de los tres conteos
+                $totalCount = $countTitulo + $countTipoNovedad + $countTipoHallazgo;
+            
+                // Sumar los totales
+                $totalTitulo += $countTitulo;
+                $totalTipoNovedad += $countTipoNovedad;
+                $totalTipoHallazgo += $countTipoHallazgo;
+                $totalGeneral += $totalCount;
+            }
+        }
+
+        
+
+
         $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFont('Arial', 'B', 11);
         $this->pdf->Cell(190, 10, utf8_decode('3.2.	NOVEDADES REPORTADAS EN PROTEAPP® '), 0, 1, 'L');
         $this->pdf->SetFont('Arial', '', 9);
         $this->pdf->SetX($margenOriginal);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A lo largo de este período, se han identificado y reportado en nuestro sistema PROTEAPP® '. $sumaCol . ' novedades relevantes en todos los sitios, que destacan la importancia de nuestra gestión de vigilancia y seguridad, las cuales se resumen a continuación:'), 0, 'J');
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('A lo largo de este período, se han identificado y reportado en nuestro sistema PROTEAPP® '. $totalGeneral . ' novedades relevantes en todos los sitios, que destacan la importancia de nuestra gestión de vigilancia y seguridad, las cuales se resumen a continuación:'), 0, 'J');
 
         
         $this->pdf->Ln( );
@@ -1056,12 +1103,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetFont('Arial', '', 8);
 
         
-        if (isset($datos['novedades_reportadas']) && is_string($datos['novedades_reportadas'])) {
-           // Convertir la cadena en un array, separando por coma
-           $novedades_reportadas = json_decode($datos['novedades_reportadas'], true);
-          
-
-       }
+       
 
        //'SITIO','INCIDENTES','HALLAZGOS','NOVEDADES DEL SITIO','TOTAL NOVEDADES REPORTADAS EN PROTEAPP'
 
@@ -1269,6 +1311,12 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         // Definir los anchos de las columnas
         $colWidths = [40, 20, 20, 45, 70]; // Ajusta estos valores según el diseño
     
+        // Inicializar los totales
+        $totalTitulo = 0;
+        $totalTipoNovedad = 0;
+        $totalTipoHallazgo = 0;
+        $totalGeneral = 0; // Total general que suma las tres columnas
+    
         // Recorrer los grupos de novedades agrupados por id_localidad
         foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
             // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
@@ -1311,28 +1359,38 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
                 $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
     
                 // Escribir el contenido dentro de la celda con MultiCell
-                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'L');
+                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C');
     
                 // Volver a la posición derecha para la siguiente celda
                 $this->pdf->SetXY($x + $colWidths[$index], $y);
             }
     
+            // Sumar los totales
+            $totalTitulo += $countTitulo;
+            $totalTipoNovedad += $countTipoNovedad;
+            $totalTipoHallazgo += $countTipoHallazgo;
+            $totalGeneral += $totalCount;
+    
             // Saltar a la siguiente fila
             $this->pdf->Ln($maxHeight);
             $this->pdf->SetX($margenOriginal);
         }
+    
+        // Mostrar el pie de página con los totales
+        $this->pdf->SetXY($margenOriginal, $this->pdf->GetY()); // Ajustar la posición para los totales
+        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
+        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1); // Columna de "Totales"
+        $this->pdf->Cell($colWidths[1], 10, number_format($totalTitulo, 0), 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[2], 10, number_format($totalTipoNovedad, 0), 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[3], 10, number_format($totalTipoHallazgo, 0), 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[4], 10, number_format($totalGeneral, 0), 1, 0, 'C', 1); // Total general de todas las columnas
+    
+        // El salto de línea final
+        $this->pdf->Ln(10);
     }
     
        
 
-        $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
-
-        // Pie de tabla
-        $this->pdf->Cell(40, 5, 'TOTAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
-        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 5
-        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 6
-        $this->pdf->Cell(45, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
-        $this->pdf->Cell(70, 5, $sumaCol, 1, 0, 'C', true); // Celda vacía para la columna 7
         
 
         $this->pdf->SetFillColor(224, 235, 255);
