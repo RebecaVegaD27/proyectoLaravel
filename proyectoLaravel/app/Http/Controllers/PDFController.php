@@ -376,11 +376,31 @@ public function accion()
         }
 
         $sumaTotal= $sumaCol3 + $sumaCol4;
+        if (isset($datos['cobertura_servicio']) && is_string($datos['cobertura_servicio'])) { 
+            // Convertir la cadena JSON en un array asociativo
+            $cobertura_servicio = json_decode($datos['cobertura_servicio'], true);
+        }
+        
+        if (isset($cobertura_servicio) && is_array($cobertura_servicio)) {
+            // Inicializar la variable para almacenar la suma total
+            $sumtotal = 0;
+        
+            // Iterar sobre cada fila de datos
+            foreach ($cobertura_servicio as $row) {
+                // Solo sumar las columnas 'veinticuatro' y 'doce' si ambas existen
+                if (isset($row['veinticuatro']) && isset($row['doce'])) {
+                    $sumtotal += $row['veinticuatro'] + $row['doce'];
+                }
+            }
+        
+           
+        }
+        
 
         $this->pdf->SetX($margenOriginal);
 
         $this->pdf->SetFont('Arial', '', 9);
-        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad se mantuvo cubierto en todos los sitios durante el periodo, con un total de '.$sumaTotal .' puestos de servicio para asegurar una vigilancia constante en las áreas asignadas, de acuerdo a la siguiente tabla:'), 0, 'J');        
+        $this->pdf->MultiCell(190, $lineHeight, utf8_decode('El servicio de seguridad se mantuvo cubierto en todos los sitios durante el periodo, con un total de '.$sumtotal .' puestos de servicio para asegurar una vigilancia constante en las áreas asignadas, de acuerdo a la siguiente tabla:'), 0, 'J');        
 
 
         #tabla 1
@@ -417,15 +437,20 @@ public function accion()
         $this->pdf->SetFont('Arial', '', 8);
         
 
-        if (isset($datos['cobertura_servicio']) && is_string($datos['cobertura_servicio'])) {
+        if (isset($datos['cobertura_servicio']) && is_string($datos['cobertura_servicio'])) { 
             // Convertir la cadena JSON en un array asociativo
             $cobertura_servicio = json_decode($datos['cobertura_servicio'], true);
         }
-        $this->pdf->SetX($margenOriginal); 
+        
+        $this->pdf->SetX($margenOriginal);
         
         if (isset($cobertura_servicio) && is_array($cobertura_servicio)) {
             // Definir los anchos de las columnas
             $colWidths = [40, 50, 15, 15, 20, 20, 30]; // Ajusta estos valores según el diseño
+        
+            // Inicializar las variables de suma
+            $totalVenticuatroh = 0;
+            $totalDoceh = 0;
         
             // Inicializar la variable para la altura máxima
             $maxHeight = 0;
@@ -435,8 +460,8 @@ public function accion()
                 $data = [
                     $row['txt_localidad'],  // Columna Titulo
                     $row['servicio'],  // Columna 'servicio'
-                    $row['venticuatroh'],  // Columna 'venticuatroh'
-                    $row['doceh'],  // Columna 'doceh'
+                    $row['veinticuatro'],  // Columna 'venticuatroh'
+                    $row['doce'],  // Columna 'doceh'
                     $row['turno'],  // Columna 'turno'
                     $row['dias'],  // Columna 'dias'
                     $row['ciudad'],  // Columna 'ciudad'
@@ -469,11 +494,29 @@ public function accion()
                     $this->pdf->SetXY($x + $colWidths[$index], $y);
                 }
         
+                // Sumar los valores de las columnas 'venticuatroh' y 'doceh'
+                $totalVenticuatroh += $row['veinticuatro'];
+                $totalDoceh += $row['doce'];
+        
                 // Avanzar a la siguiente fila
                 $this->pdf->Ln($maxHeight);
                 $this->pdf->SetX($margenOriginal); // Ajustar la posición para la siguiente fila
             }
+        
+            // Ahora agregar el pie de tabla con los totales
+            $this->pdf->SetX($margenOriginal);
+            $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
+        
+            // Pie de tabla con los totales
+            $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true);  // Columna "TOTAL GENERAL"
+            $this->pdf->Cell(50, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'servicio'
+            $this->pdf->Cell(15, 5, number_format($totalVenticuatroh, 2), 1, 0, 'C', true);  // Total de la columna 'venticuatroh'
+            $this->pdf->Cell(15, 5, number_format($totalDoceh, 2), 1, 0, 'C', true);  // Total de la columna 'doceh'
+            $this->pdf->Cell(20, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'turno'
+            $this->pdf->Cell(20, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'dias'
+            $this->pdf->Cell(30, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'ciudad'
         }
+        
         
         
         // Antes de retornar el PDF, después de generar el contenido de la tabla
@@ -485,13 +528,7 @@ public function accion()
 
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro
 
-        // Pie de tabla
-        $this->pdf->Cell(90, 5, 'TOTAL', 1, 0, 'C', true); // Unificar columnas 1 y 2 con "TOTALES"
-        $this->pdf->Cell(15, 5, $sumaCol3, 1, 0, 'C', true); // Suma de la columna 3
-        $this->pdf->Cell(15, 5, $sumaCol4, 1, 0, 'C', true); // Suma de la columna 4
-        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 5
-        $this->pdf->Cell(20, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 6
-        $this->pdf->Cell(30, 5, '', 1, 0, 'C', true); // Celda vacía para la columna 7
+        
         
 
         $this->pdf->SetFillColor(224, 235, 255);
