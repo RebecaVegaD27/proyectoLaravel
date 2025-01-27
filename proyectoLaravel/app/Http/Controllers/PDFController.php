@@ -417,31 +417,64 @@ public function accion()
         $this->pdf->SetFont('Arial', '', 8);
         
 
-       
-        if (!empty($datos['cobertura_servicio']) && is_array($datos['cobertura_servicio'])) {
-            foreach ([$datos['cobertura_servicio']] as $row) {
-                $this->pdf->SetX($margenOriginal);
+        if (isset($datos['cobertura_servicio']) && is_string($datos['cobertura_servicio'])) {
+            // Convertir la cadena JSON en un array asociativo
+            $cobertura_servicio = json_decode($datos['cobertura_servicio'], true);
+        }
+        $this->pdf->SetX($margenOriginal); 
         
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
+        if (isset($cobertura_servicio) && is_array($cobertura_servicio)) {
+            // Definir los anchos de las columnas
+            $colWidths = [40, 50, 15, 15, 20, 20, 30]; // Ajusta estos valores según el diseño
+        
+            // Inicializar la variable para la altura máxima
+            $maxHeight = 0;
+        
+            foreach ($cobertura_servicio as $row) {
+                // Crear el array con los datos a mostrar
+                $data = [
+                    $row['txt_localidad'],  // Columna Titulo
+                    $row['servicio'],  // Columna 'servicio'
+                    $row['venticuatroh'],  // Columna 'venticuatroh'
+                    $row['doceh'],  // Columna 'doceh'
+                    $row['turno'],  // Columna 'turno'
+                    $row['dias'],  // Columna 'dias'
+                    $row['ciudad'],  // Columna 'ciudad'
+                ];
+        
+                // Calcular la altura máxima de la fila
+                $maxHeight = 0;
+                foreach ($data as $index => $content) {
+                    // Estimar el número de líneas necesarias para el contenido
+                    $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+                    $lineCount = ceil($lineCount); // Redondear hacia arriba
+                    $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+                    $maxHeight = max($maxHeight, $cellHeight); 
                 }
         
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
+                $maxHeight = $maxHeight + 1; // Tomar la altura máxima
         
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
+                // Dibujar las celdas de la fila con la misma altura máxima
+                foreach ($data as $index => $content) {
+                    $x = $this->pdf->GetX(); // Posición X actual
+                    $y = $this->pdf->GetY(); // Posición Y actual
+        
+                    // Dibujar un rectángulo para el borde de la celda
+                    $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+        
+                    // Escribir el contenido dentro de la celda con MultiCell
+                    $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+        
+                    // Volver a la posición derecha para la siguiente celda
+                    $this->pdf->SetXY($x + $colWidths[$index], $y);
                 }
         
-                // Mover a la siguiente línea
+                // Avanzar a la siguiente fila
                 $this->pdf->Ln($maxHeight);
+                $this->pdf->SetX($margenOriginal); // Ajustar la posición para la siguiente fila
             }
         }
+        
         
         // Antes de retornar el PDF, después de generar el contenido de la tabla
        # $this->pdf->Ln(); // Salto de línea para el pie de tabla
@@ -1472,7 +1505,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         'PUESTO',
         'FECHA DE INGRESO',
         'FECHA DE  SALIDA');
-        $w = array(20,  60, 40, 30, 30);
+        $w = array(10,  75, 40, 30, 30);
 
         // Color de fondo de la cabecera (negro)
         $this->pdf->SetFillColor(0, 0, 0);
@@ -1492,7 +1525,26 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->SetFont('Arial', '', 8);
 
+        if (isset($datos['cambio_nomina_personal']) && is_string($datos['cambio_nomina_personal'])) {
+            // Convertir la cadena JSON en un array asociativo
+            $cambio_nomina_personal = json_decode($datos['cambio_nomina_personal'], true);
+        }
 
+        $this->pdf->SetX($margenOriginal);
+
+if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
+    $index=1;
+    foreach ($cambio_nomina_personal as $row) {
+        $this->pdf->Cell(10, 10, $index, 1, 0, 'C');  // Columna índice
+        $this->pdf->Cell(75, 10, $row['apellido_nombre'], 1, 0, 'C');  // Columna Titulo
+        $this->pdf->Cell(40, 10, $row['puesto'], 1, 0, 'C');  // Columna 'rondas_generadas'
+        $this->pdf->Cell(30, 10, $row['fecha_ingreso'], 1, 0, 'C');  // Columna 'num_marcaciones'
+        $this->pdf->Cell(30, 10, $row['fecha_salida'], 1, 0, 'C');  // Columna 'num_marcaciones'
+        $this->pdf->Ln(); 
+        $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
+        $index++;
+    }
+}
         // if (!empty($datos['novedades_reportadas']) && is_array($datos['novedades_reportadas'])) {
         //     foreach ([$datos['novedades_reportadas'] ]as $row) {
         //         $this->pdf->SetX($margenOriginal);
@@ -1561,32 +1613,68 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->SetFillColor(224, 235, 255);
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->SetFont('Arial', '', 8);
-
-
-        if (!empty($datos['cambio_nomina_personal']) && is_array($datos['cambio_nomina_personal'])) {
-            foreach ([$datos['cambio_nomina_personal'] ]as $row) {
-                $this->pdf->SetX($margenOriginal);
-        
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
-        
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
-        
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
-        
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
-            }
+        if (isset($datos['acciones_correctivas']) && is_string($datos['acciones_correctivas'])) {
+            // Convertir la cadena JSON en un array asociativo
+            $acciones_correctivas = json_decode($datos['acciones_correctivas'], true);
         }
+        $indextabla = 1;
+        $this->pdf->SetX($margenOriginal); 
+
+        if (isset($acciones_correctivas) && is_array($acciones_correctivas)) {
+            
+            // Definir los anchos de las columnas
+            $colWidths = [20, 30, 40, 40, 50]; // Ajusta estos valores según el diseño
+            
+            // Inicializar la variable para la altura máxima
+            $maxHeight = 0;
+        
+            foreach ($acciones_correctivas as $row) {
+                // Crear el array con los datos a mostrar
+                
+                $data = [
+                    $indextabla,  // Columna índice
+                    $row['txt_localidad'],  // Columna Titulo
+                    $row['fecha_incidente'],  // Columna 'fecha_incidente'
+                    $row['incidente'],  // Columna 'incidente'
+                    $row['medida_control'],  // Columna 'medida_control'
+                ];
+        
+                // Calcular la altura máxima de la fila
+                $maxHeight = 0;
+                foreach ($data as $index => $content) {
+                    // Estimar el número de líneas necesarias para el contenido
+                    $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+                    $lineCount = ceil($lineCount); // Redondear hacia arriba
+                    $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+                    $maxHeight = max($maxHeight, $cellHeight); 
+                }
+        
+                $maxHeight = $maxHeight + 4; // Tomar la altura máxima
+        
+                // Dibujar las celdas de la fila con la misma altura máxima
+                foreach ($data as $index => $content) {
+                    $x = $this->pdf->GetX(); // Posición X actual
+                    $y = $this->pdf->GetY(); // Posición Y actual
+        
+                    // Dibujar un rectángulo para el borde de la celda
+                    $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+        
+                    // Escribir el contenido dentro de la celda con MultiCell
+                    $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+        
+                    // Volver a la posición derecha para la siguiente celda
+                    $this->pdf->SetXY($x + $colWidths[$index], $y);
+                }
+        
+                // Avanzar a la siguiente fila
+                $this->pdf->Ln($maxHeight);
+                $this->pdf->SetX($margenOriginal); // Ajustar la posición para la siguiente fila
+        
+                $indextabla++;
+            }
+           
+        }
+        
 
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
@@ -1599,14 +1687,29 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
         $this->pdf->MultiCell(190, $lineHeight, utf8_decode('Durante el mes de ' . $mes . ' se proporcionaron los siguientes valores agregados solicitados por el departamento de seguridad física de ' . $datos['cliente'] . ' :'), 0, 'J');
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
-        if (isset($datos['acciones_correctivas']) && is_array($datos['acciones_correctivas'])) {
-            $counter = 1;
-            foreach ([$datos['acciones_correctivas']] as $item) {
-                $this->pdf->Ln(2); // Espacio entre los elementos de la lista
-                $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . ') ' . $item), 0, 'L');
-                $counter++;
-            }
-            }
+        // if (isset($datos['acciones_correctivas']) && is_array($datos['acciones_correctivas'])) {
+        //     $counter = 1;
+        //     foreach ([$datos['acciones_correctivas']] as $item) {
+        //         $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+        //         $this->pdf->MultiCell(190, $lineHeight, utf8_decode($counter . ') ' . $item), 0, 'L');
+        //         $counter++;
+        //     }
+        //     }
+
+        if (isset($datos['valores_agregados']) && is_string($datos['valores_agregados'])) {
+            // Convertir la cadena JSON en un array asociativo
+            $valores_agregados = json_decode($datos['valores_agregados'], true);
+        }
+
+        $this->pdf->SetX($margenOriginal);
+
+        if (isset($valores_agregados) && is_array($valores_agregados)) {
+    foreach ($valores_agregados as $row) {
+        $this->pdf->Cell(150, 10, $row['valor'], 0, 0, 'J');  // Columna Titulo
+        $this->pdf->Ln();
+        $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
+    }
+}
 
         $this->pdf->Ln();
         $this->pdf->SetX($margenOriginal);
