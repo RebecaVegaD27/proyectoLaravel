@@ -7,6 +7,11 @@ use App\Models\Detalle;
 use App\Models\Novedad;
 use App\Models\Recomendacion;
 use App\Models\Ronda;
+use App\Models\Custodia;
+use App\Models\Cobertura;
+use App\Models\Accion;
+use App\Models\Nomina;
+use App\Models\Valor;
 use Illuminate\Http\Request;
 use FPDF;
 
@@ -43,7 +48,55 @@ public function actualizarFechaReporte(Request $request)
     }
 }
 
+public function cobertura()
+{
+    // Lógica que deseas ejecutar cuando se haga la solicitud GET
+     // Obtener todos los registros de la tabla novedades
+     $cobertura = Cobertura::all();
 
+     // Si quieres devolver los datos como JSON (ideal para API)
+     return response()->json($cobertura); 
+}
+
+public function nomina()
+{
+    // Lógica que deseas ejecutar cuando se haga la solicitud GET
+     // Obtener todos los registros de la tabla novedades
+     $nomina = Nomina::all();
+
+     // Si quieres devolver los datos como JSON (ideal para API)
+     return response()->json($nomina); 
+}
+
+public function custodia()
+{
+    // Lógica que deseas ejecutar cuando se haga la solicitud GET
+     // Obtener todos los registros de la tabla novedades
+     $custodia = Custodia::all();
+
+     // Si quieres devolver los datos como JSON (ideal para API)
+     return response()->json($custodia); 
+}
+
+public function valor()
+{
+    // Lógica que deseas ejecutar cuando se haga la solicitud GET
+     // Obtener todos los registros de la tabla novedades
+     $valor = Valor::all();
+
+     // Si quieres devolver los datos como JSON (ideal para API)
+     return response()->json($valor); 
+}
+
+public function accion()
+{
+    // Lógica que deseas ejecutar cuando se haga la solicitud GET
+     // Obtener todos los registros de la tabla novedades
+     $accion = Accion::all();
+
+     // Si quieres devolver los datos como JSON (ideal para API)
+     return response()->json($accion); 
+}
     
     public function detalles()
     {
@@ -283,7 +336,7 @@ public function actualizarFechaReporte(Request $request)
         $this->pdf->SetLeftMargin(20);
        
         // Lista numerada dinámica desde el array $datos['items']
-
+    
 
         if (isset($datos['desc_localidad']) && is_string($datos['desc_localidad'])) {
             // Convertir la cadena en un array, separando por coma
@@ -989,7 +1042,7 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
            
  
         }
-        
+
 
         $totalGeneral = 0;
 

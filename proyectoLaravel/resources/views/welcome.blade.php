@@ -146,6 +146,71 @@
     </div>
 
     <script>
+let accionJSON = [];
+
+// Obtener las recomendaciones
+fetch('/accion')
+    .then(response => response.json())  // Convertir la respuesta en formato JSON
+    .then(data => {
+        accionJSON = data;
+        console.log("accionJSON", data)
+    })
+    .catch(error => {
+        console.error('Error al obtener accionJSON:', error);
+    });
+
+let coberturaJSON = [];
+
+// Obtener las recomendaciones
+fetch('/cobertura')
+    .then(response => response.json())  // Convertir la respuesta en formato JSON
+    .then(data => {
+        coberturaJSON = data;
+        console.log("coberturaJSON", data)
+    })
+    .catch(error => {
+        console.error('Error al obtener coberturaJSON:', error);
+    });
+
+
+    let nominaJSON = [];
+
+// Obtener las recomendaciones
+fetch('/nomina')
+    .then(response => response.json())  // Convertir la respuesta en formato JSON
+    .then(data => {
+        nominaJSON = data;
+        console.log("nominaJSON", data)
+    })
+    .catch(error => {
+        console.error('Error al obtener nominaJSON:', error);
+    });
+
+    let custodiaJSON = [];
+
+// Obtener las recomendaciones
+fetch('/custodia')
+    .then(response => response.json())  // Convertir la respuesta en formato JSON
+    .then(data => {
+        custodiaJSON = data;
+        console.log("custodiaJSON", data)
+    })
+    .catch(error => {
+        console.error('Error al obtener custodiaJSON:', error);
+    });
+
+let valorJSON = [];
+
+// Obtener las recomendaciones
+fetch('/valor')
+    .then(response => response.json())  // Convertir la respuesta en formato JSON
+    .then(data => {
+        valorJSON = data;
+        console.log("valor", data)
+    })
+    .catch(error => {
+        console.error('Error al obtener rondasJSON:', error);
+    });
 
         let rondasJSON = [];
 
@@ -287,6 +352,12 @@ function obtenerMesNumerico(mes) {
                 return Array.isArray(valor) ? valor : [];
             };
 
+            // console.log("aqui1", group.desc_localidad)
+            // console.log("aqui2", asegurarArray(group.desc_localidad))
+            // console.log("group" , group)
+
+            // console.log("aqui", [...new Set(asegurarArray(group.desc_localidad))].join(','))
+
             const url = `/generar-pdf?${new URLSearchParams({
                 cliente: nombre_generico,
                 id: index,  // Asegúrate de incluir el ID si lo necesitas
@@ -295,7 +366,7 @@ function obtenerMesNumerico(mes) {
                 fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
                 fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
                 desc_codigo: asegurarArray(group.desc_codigo).join(','),
-                desc_localidad: [...new Set(asegurarArray(group.desc_localidad))].join(','),
+                desc_localidad: group.desc_localidad || '', // Valida si 'desc_localidad' existe
                 desc_puesto: asegurarArray(group.desc_puesto).join(','),
                 desc_agente: asegurarArray(group.desc_agente).join(','),
                 desc_tipo_novedad: asegurarArray(group.desc_tipo_novedad).join(','),
@@ -312,15 +383,15 @@ function obtenerMesNumerico(mes) {
                 fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
                 desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
                 desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
-                cobertura_servicio: asegurarArray(group.cobertura_servicio).join(','),
+                cobertura_servicio: JSON.stringify(coberturaJSON.slice(0, 5)) || '',
                 ronda_vigilancia: JSON.stringify(rondasJSON.slice(0, 5)) || '',
                control_acceso: JSON.stringify(controlJSON.slice(0, 5)) || '',
-                reporte_custodia: asegurarArray(group.reporte_custodia).join(','),
+                reporte_custodia:JSON.stringify(custodiaJSON.slice(0, 5)) || '',
                 incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
                novedades_reportadas: JSON.stringify(novedadesJSON.slice(0, 5)) || '',
-                cambio_nomina_personal: asegurarArray(group.cambio_nomina_personal).join(','),
-                acciones_correctivas: asegurarArray(group.acciones_correctivas).join(','),
-                valores_agregados: asegurarArray(group.valores_agregados).join(','),
+                cambio_nomina_personal: JSON.stringify(nominaJSON.slice(0, 5)) || '',
+                acciones_correctivas:  JSON.stringify(accionJSON.slice(0, 5)) || '',
+                valores_agregados: JSON.stringify(valorJSON.slice(0, 5)) || '',
                 conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
                 recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === group.desc_cliente)) || '' // Se pasa el JSON de recomendaciones
             }).toString()}`;
@@ -426,6 +497,7 @@ fetch('/detalles')
                             periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
+                            desc_localidad: detalle.desc_localidad,
                         };
                     }
                     groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
@@ -443,6 +515,7 @@ fetch('/detalles')
                             periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
+                            desc_localidad: detalle.desc_localidad,
                         };
                     }
                     groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
@@ -458,6 +531,7 @@ fetch('/detalles')
         // Llenar la tabla
         const detallesTable = document.getElementById('detallesTable');
         let index = 1;
+        
 
         Object.keys(groupedData).forEach(key => {
             const group = groupedData[key];
@@ -467,6 +541,7 @@ fetch('/detalles')
 
             // Obtener el nombre genérico del cliente desde el mapa
             const clienteGenerico = clienteMap[group.desc_cliente];
+           
 
             const row = document.createElement('tr');
             row.innerHTML = `

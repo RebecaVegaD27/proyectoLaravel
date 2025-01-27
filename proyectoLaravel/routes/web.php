@@ -31,4 +31,14 @@ Route::get('/novedades', [PDFController::class, 'novedades']);
 
 Route::get('/rondas', [PDFController::class, 'rondas']);
 
+Route::get('/cobertura', [PDFController::class, 'cobertura']);
+
+Route::get('/valor', [PDFController::class, 'valor']);
+
+Route::get('/custodia', [PDFController::class, 'custodia']);
+
+Route::get('/nomina', [PDFController::class, 'nomina']);
+
+Route::get('/accion', [PDFController::class, 'accion']);
+
 
