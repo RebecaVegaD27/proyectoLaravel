@@ -978,9 +978,7 @@ $this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitan
 
         // Contenido
         $sumaTotal = 0;
-        if (!empty($datos['reporte_custodia']) && is_array($datos['reporte_custodia'])) {
-            $sumaTotal= count($datos['reporte_custodia']);
-         }
+  
 
         $this->pdf->Ln( );
         $this->pdf->SetX($margenOriginal);
@@ -1039,43 +1037,145 @@ $this->pdf->Ln();  // Después de la cabecera, agregamos un salto de línea
 
         // // Cabecera
         // for($i=0;$i<count($header);$i++)
-        //     $this->pdf->MultiCell($w[$i],7,$header[$i],1,0,'C',1);
-        $this->pdf->Ln();
+      
 
         // Restaurar color
         $this->pdf->SetFillColor(224, 235, 255);
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->SetFont('Arial', '', 8);
 
+        $this->pdf->SetX($margenOriginal);
+
+        
+
        
         
-        if (!empty($datos['reporte_custodia']) && is_array($datos['reporte_custodia'])) {
-           
+// Verificar si 'reporte_custodia' está presente y es una cadena JSON
+// if (isset($datos['reporte_custodia']) && is_string($datos['reporte_custodia'])) {
+//     // Convertir la cadena JSON en un array asociativo
+//     $reporte_custodia = json_decode($datos['reporte_custodia'], true);
+// }
 
-            foreach ([$datos['reporte_custodia']] as $row) {
+// // Verificar si $reporte_custodia es un array
+// if (isset($reporte_custodia) && is_array($reporte_custodia)) {
+//     // Definir los anchos de las columnas y los headers
+//     $header = array('NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
+//     $colWidths = [15, 15, 15, 35, 35, 20, 25, 35]; // Ajusta estos valores según el diseño
+    
 
-                $this->pdf->SetX($margenOriginal);
-        
-                // Calcular alturas de las celdas
-                $cellHeights = [];
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $cellHeights[] = $this->getCellHeight($value, $width);
-                }
-        
-                // Obtener la altura máxima para la fila
-                $maxHeight = max($cellHeights);
-        
-                // Dibujar las celdas con la altura máxima
-                foreach ($w as $index => $width) {
-                    $value = isset($row[$index]) ? $row[$index] : '';
-                    $this->pdf->Cell($width, $maxHeight, utf8_decode($value), 1, 0, 'C');
-                }
-        
-                // Mover a la siguiente línea
-                $this->pdf->Ln($maxHeight);
-            }
+//     $this->pdf->SetX($margenOriginal);
+
+//     // Iterar sobre cada fila en el reporte
+//     $index = 1;  // Para el campo 'NO.' que empieza desde 1
+//     foreach ($reporte_custodia as $row) {
+//         // Crear el array con los datos a mostrar
+//         $data = [
+//             $index++,  // NO. (Index empieza en 1)
+//             $row['fecha'],  // Columna FECHA
+//             $row['guia'],  // Columna GUIA NO.
+//             $row['punto_partida'],  // Columna PUNTO PARTIDA
+//             $row['punto_llegada'],  // Columna PUNTO LLEGADA
+//             $row['custodios'],  // Columna CUSTODIOS
+//             $row['contenedor'],  // Columna CONTENEDOR
+//             $row['placa_camiones'],  // Columna PLACAS CAMIONES
+          
+//         ];
+
+//         // Calcular la altura máxima de la fila
+//         $maxHeight = 0;
+//         foreach ($data as $index => $content) {
+//             // Estimar el número de líneas necesarias para el contenido
+//             $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
+//             $lineCount = ceil($lineCount); // Redondear hacia arriba
+//             $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
+//             $maxHeight = max($maxHeight, $cellHeight); 
+//         }
+
+//         $maxHeight = $maxHeight + 5; // Tomar la altura máxima
+
+//         // Dibujar las celdas de la fila con la misma altura máxima
+//         foreach ($data as $index => $content) {
+//             $x = $this->pdf->GetX(); // Posición X actual
+//             $y = $this->pdf->GetY(); // Posición Y actual
+
+//             // Dibujar un rectángulo para el borde de la celda
+//             $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
+
+//             // Escribir el contenido dentro de la celda con MultiCell
+//             $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+
+//             // Volver a la posición derecha para la siguiente celda
+//             $this->pdf->SetXY($x + $colWidths[$index], $y);
+//         }
+
+//         // Saltar a la siguiente fila
+//         $this->pdf->Ln($maxHeight);
+//         $this->pdf->SetX($margenOriginal);
+//     }
+
+//     // El salto de línea final
+//     $this->pdf->Ln(10);
+// }
+
+if (isset($datos['reporte_custodia']) && is_string($datos['reporte_custodia'])) {
+    $reporte_custodia = json_decode($datos['reporte_custodia'], true);
+}
+
+if (isset($reporte_custodia) && is_array($reporte_custodia)) {
+    $header = array('NO.', 'FECHA', 'GUIA NO.', 'PUNTO PARTIDA', 'PUNTO LLEGADA', 'CUSTODIOS', 'CONTENEDOR', 'PLACAS CAMIONES');
+    $colWidths = [15, 15, 15, 35, 35, 20, 25, 35];
+    $margenOriginal = 10;
+    $margenInferior = 15;
+    $alturaPiePagina = 20; // Altura estimada del pie de página
+
+    $this->pdf->SetX($margenOriginal);
+    
+    $index = 1;
+    foreach ($reporte_custodia as $row) {
+        $data = [
+            $index++,
+            $row['fecha'],
+            $row['guia'],
+            $row['punto_partida'],
+            $row['punto_llegada'],
+            $row['custodios'],
+            $row['contenedor'],
+            $row['placa_camiones'],
+        ];
+
+        // Calcular altura máxima de la fila
+        $maxHeight = 0;
+        foreach ($data as $i => $content) {
+            $lineCount = ceil($this->pdf->GetStringWidth((string)$content) / $colWidths[$i]);
+            $cellHeight = $lineCount * 5;
+            $maxHeight = max($maxHeight, $cellHeight);
         }
+        $maxHeight = $maxHeight + 5;
+
+        // Verificar espacio disponible considerando el pie de página
+        $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+        
+        if ($maxHeight > $espacioDisponible) {
+            $this->pdf->AddPage();
+            $this->pdf->SetX($margenOriginal);
+        }
+
+        // Guardar posición Y inicial de la fila
+        $startY = $this->pdf->GetY();
+        
+        // Dibujar todas las celdas de la fila
+        foreach ($data as $i => $content) {
+            $x = $this->pdf->GetX();
+            $this->pdf->Rect($x, $startY, $colWidths[$i], $maxHeight);
+            $this->pdf->MultiCell($colWidths[$i], 5, (string)$content, 0, 'C');
+            $this->pdf->SetXY($x + $colWidths[$i], $startY);
+        }
+
+        $this->pdf->Ln($maxHeight);
+        $this->pdf->SetX($margenOriginal);
+    }
+}
+
 
       
         $this->pdf->SetX($margenOriginal);
