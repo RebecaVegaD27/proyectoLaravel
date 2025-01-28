@@ -978,6 +978,17 @@ $this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitan
 
         // Contenido
         $sumaTotal = 0;
+
+        if (isset($datos['reporte_custodia']) && is_string($datos['reporte_custodia'])) {
+            // Decodificamos el JSON a un array
+            $reporte_custodia = json_decode($datos['reporte_custodia'], true);
+            
+            // Comprobamos si la decodificación fue exitosa y obtenemos el count
+            if (is_array($reporte_custodia)) {
+                $sumaTotal = count($reporte_custodia);  // Esto obtiene el número de elementos en el array
+                
+            }
+        }
   
 
         $this->pdf->Ln( );
