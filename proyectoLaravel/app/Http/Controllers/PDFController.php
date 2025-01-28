@@ -510,8 +510,8 @@ public function accion()
             // Pie de tabla con los totales
             $this->pdf->Cell(40, 5, 'TOTAL GENERAL', 1, 0, 'C', true);  // Columna "TOTAL GENERAL"
             $this->pdf->Cell(50, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'servicio'
-            $this->pdf->Cell(15, 5, number_format($totalVenticuatroh, 2), 1, 0, 'C', true);  // Total de la columna 'venticuatroh'
-            $this->pdf->Cell(15, 5, number_format($totalDoceh, 2), 1, 0, 'C', true);  // Total de la columna 'doceh'
+            $this->pdf->Cell(15, 5, $totalVenticuatroh, 1, 0, 'C', true);  // Total de la columna 'venticuatroh'
+            $this->pdf->Cell(15, 5, $totalDoceh, 1, 0, 'C', true);  // Total de la columna 'doceh'
             $this->pdf->Cell(20, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'turno'
             $this->pdf->Cell(20, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'dias'
             $this->pdf->Cell(30, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'ciudad'
@@ -938,7 +938,7 @@ $this->pdf->SetX($margenOriginal);
             $totalFila = $countEmpleado + $countVisitante + $countEmpresa + $countCliente;
     
             // Mostrar el total de la fila en la última columna
-            $this->pdf->Cell($colWidths[count($data)], 10, number_format($totalFila, 2), 1, 0, 'C');
+            $this->pdf->Cell($colWidths[count($data)], 10, $totalFila, 1, 0, 'C');
     
             // Sumar los totales generales
             $totalEmpleado += $countEmpleado;
@@ -956,11 +956,11 @@ $this->pdf->SetX($margenOriginal);
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
        
         $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1); // Agregar 1 al parámetro fill
-$this->pdf->Cell($colWidths[1], 10, number_format($totalEmpleado, 0), 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[2], 10, number_format($totalVisitante, 0), 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[3], 10, number_format($totalEmpresa, 0), 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[4], 10, number_format($totalCliente, 0), 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[5], 10, number_format($totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 2), 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[1], 10, $totalEmpleado, 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[2], 10, $totalVisitante, 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[3], 10, $totalEmpresa, 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[4], 10, $totalCliente, 1, 0, 'C', 1);
+$this->pdf->Cell($colWidths[5], 10, $totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 1, 0, 'C', 1);
 
         
         // El salto de línea final
@@ -1641,10 +1641,10 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         $this->pdf->SetXY($margenOriginal, $this->pdf->GetY()); // Ajustar la posición para los totales
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
         $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1); // Columna de "Totales"
-        $this->pdf->Cell($colWidths[1], 10, number_format($totalTitulo, 0), 1, 0, 'C', 1);
-        $this->pdf->Cell($colWidths[2], 10, number_format($totalTipoNovedad, 0), 1, 0, 'C', 1);
-        $this->pdf->Cell($colWidths[3], 10, number_format($totalTipoHallazgo, 0), 1, 0, 'C', 1);
-        $this->pdf->Cell($colWidths[4], 10, number_format($totalGeneral, 0), 1, 0, 'C', 1); // Total general de todas las columnas
+        $this->pdf->Cell($colWidths[1], 10, $totalTitulo, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[2], 10, $totalTipoNovedad, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[3], 10, $totalTipoHallazgo, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[4], 10, $totalGeneral, 1, 0, 'C', 1); // Total general de todas las columnas
     
         // El salto de línea final
         $this->pdf->Ln(10);
