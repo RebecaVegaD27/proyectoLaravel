@@ -1213,6 +1213,33 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
  
         }
 
+        if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
+            $counter = 1;
+            foreach ($novedades_reportadas as $item) {
+                // Acceder a los campos 'novedad', 'txt_localidad' y 'detalle' dentro de cada objeto
+                $novedad = isset($item['tipo_novedad']) ? $item['tipo_novedad'] : '';
+                $txt_localidad = isset($item['txt_localidad']) ? $item['txt_localidad'] : '';
+                $detalle = isset($item['detalle']) ? $item['detalle'] : '';
+                
+                // Concatenar los datos de cada novedad
+                $lineContent = $counter . '. ' . utf8_decode($novedad) . ' - SITIO: ' . utf8_decode($txt_localidad) . ' - DETALLE: ' . utf8_decode($detalle);
+                
+                // Salto de línea y luego dibujar el contenido
+                $this->pdf->Ln(2); // Espacio entre los elementos de la lista
+                $this->pdf->MultiCell(175, $lineHeight, $lineContent, 0, 'J');
+                $counter++;
+            }
+        }
+
+        
+
+        if (isset($datos['novedades_reportadas']) && is_string($datos['novedades_reportadas'])) {
+            // Convertir la cadena en un array, separando por coma
+            $novedades_reportadas = json_decode($datos['novedades_reportadas'], true);
+           
+ 
+        }
+
 
         $totalGeneral = 0;
 
