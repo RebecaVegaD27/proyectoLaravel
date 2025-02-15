@@ -346,66 +346,93 @@ function obtenerMesNumerico(mes) {
             }
         }
 
-        function generarPDF(index, nombre_generico, cliente, group) {
-            // Función para asegurar que las propiedades sean arrays antes de hacer join
-            const asegurarArray = (valor) => {
-                return Array.isArray(valor) ? valor : [];
-            };
+        function generarPDF(index, cliente, group) {
+    // Función para asegurar que las propiedades sean arrays antes de hacer join
+    const asegurarArray = (valor) => {
+        return Array.isArray(valor) ? valor : [];
+    };
 
-            // console.log("aqui1", group.desc_localidad)
-            // console.log("aqui2", asegurarArray(group.desc_localidad))
-            // console.log("group" , group)
+    // Función para convertir la fecha en el formato "MES AÑO"
+    function obtenerPeriodo(fecha) {
+        const meses = [
+            'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+        ];
 
-            // console.log("aqui", [...new Set(asegurarArray(group.desc_localidad))].join(','))
+        const date = new Date(fecha);  // Convertir el created_at (o cualquier fecha) en un objeto Date
+        const mes = meses[date.getMonth()];  // Obtiene el mes (0 - 11)
+        const anio = date.getFullYear();    // Obtiene el año
 
-            const url = `/generar-pdf?${new URLSearchParams({
-                cliente: nombre_generico,
-                id: index,  // Asegúrate de incluir el ID si lo necesitas
-                periodo: group.periodo || '',  // Añadir periodo aquí
-                destinatario: group.destinatario || '', // Valida si 'destinatario' existe
-                fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
-                fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
-                desc_codigo: asegurarArray(group.desc_codigo).join(','),
-                desc_localidad: group.desc_localidad || '', // Valida si 'desc_localidad' existe
-                desc_puesto: asegurarArray(group.desc_puesto).join(','),
-                desc_agente: asegurarArray(group.desc_agente).join(','),
-                desc_tipo_novedad: asegurarArray(group.desc_tipo_novedad).join(','),
-                desc_tipo_hallazgo: asegurarArray(group.desc_tipo_hallazgo).join(','),
-                desc_tipo_incidente: asegurarArray(group.desc_tipo_incidente).join(','),
-                desc_tipo_act_puesto: asegurarArray(group.desc_tipo_act_puesto).join(','),
-                desc_tipo_novedad_protemaxi: asegurarArray(group.desc_tipo_novedad_protemaxi).join(','),
-                desc_titulo: asegurarArray(group.desc_titulo).join(','),
-                desc_detalle: asegurarArray(group.desc_detalle).join(','),
-                desc_persona_involucrada: asegurarArray(group.desc_persona_involucrada).join(','),
-                desc_lugar_involucrado: asegurarArray(group.desc_lugar_involucrado).join(','),
-                desc_comentario: asegurarArray(group.desc_comentario).join(','),
-                desc_nombre_central: asegurarArray(group.desc_nombre_central).join(','),
-                fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
-                desc_estado_novedad: asegurarArray(group.desc_estado_novedad).join(','),
-                desc_estado_aprobacion: asegurarArray(group.desc_estado_aprobacion).join(','),
-                cobertura_servicio: JSON.stringify(coberturaJSON.slice(0, 5)) || '',
-                ronda_vigilancia: JSON.stringify(rondasJSON.slice(0, 5)) || '',
-               control_acceso: JSON.stringify(controlJSON.slice(0, 5)) || '',
-                reporte_custodia:JSON.stringify(custodiaJSON.slice(0, 5)) || '',
-                incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
-               novedades_reportadas: JSON.stringify(novedadesJSON.slice(0, 5)) || '',
-                cambio_nomina_personal: JSON.stringify(nominaJSON.slice(0, 5)) || '',
-                acciones_correctivas:  JSON.stringify(accionJSON.slice(0, 5)) || '',
-                valores_agregados: JSON.stringify(valorJSON.slice(0, 5)) || '',
-                conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
-                recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === group.desc_cliente)) || '' // Se pasa el JSON de recomendaciones
-            }).toString()}`;
+        return `${mes} ${anio}`;
+    }
 
-            // Redirigir al usuario para generar el PDF
-            window.location.href = url;
-        }
+    // Obtener el periodo de created_at en formato "MES AÑO"
+    const periodoCreado = obtenerPeriodo(group.fecha_reporte); // Usar 'fecha_reporte' o la que necesites
 
-        function handleButtonClick(index,nombre_generico, cliente, groupJSON, event) {
+    // Comparar con el periodo de group
+    const ronda_vigilancia = JSON.stringify(rondasJSON.filter(key => {
+        const periodoRonda = obtenerPeriodo(key.created_at);  // Formatear 'created_at' de ronda
+        return key.tx_cliente === group.cliente && periodoRonda === group.periodo;  // Comparar periodo
+    })) || '';
+
+    // Comparar con el periodo de control_acceso
+    const control_acceso = JSON.stringify(controlJSON.filter(key => {
+        const periodoControl = obtenerPeriodo(key.created_at);  // Formatear 'created_at' de control_acceso
+        return key.tx_cliente === group.cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+    console.log("desc_localidad", group.desc_localidad);
+    console.log("grupo final", group);
+
+    const url = `/generar-pdf?${new URLSearchParams({
+        cliente: cliente,  // Nombre genérico del cliente
+        id: index,  // Asegúrate de incluir el ID si lo necesitas
+        periodo: group.periodo || '',  // Añadir periodo aquí
+        destinatario:  '', // Valida si 'destinatario' existe
+        fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
+        fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
+        //desc_codigo: asegurarArray(group.desc_codigo).join(','),
+        desc_localidad: group.desc_localidad || '', // Valida si 'desc_localidad' existe
+        //desc_puesto: asegurarArray(group.desc_puesto).join(','),
+        //desc_agente: asegurarArray(group.id_agente).join(','),
+       // desc_tipo_novedad: asegurarArray(group.TIPO_NOVEDAD).join(','),
+        // desc_tipo_hallazgo: asegurarArray(group.desc_tipo_hallazgo).join(','),
+        // desc_tipo_incidente: asegurarArray(group.desc_tipo_incidente).join(','),
+        //desc_tipo_act_puesto: asegurarArray(group.desc_tipo_act_puesto).join(','),
+       // desc_tipo_novedad_protemaxi: asegurarArray(group.desc_tipo_novedad_protemaxi).join(','),
+        desc_titulo: asegurarArray(group.titulo).join(','),
+        desc_detalle: asegurarArray(group.detalle).join(','),
+       // desc_persona_involucrada: asegurarArray(group.persona_involucradas).join(','),
+        //desc_lugar_involucrado: asegurarArray(group.lugar_involucrado).join(','),
+        //desc_comentario: asegurarArray(group.desc_comentario).join(','),
+        //desc_nombre_central: asegurarArray(group.centralista).join(','),
+        //fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
+        //desc_estado_novedad: asegurarArray(group.estado_novedad).join(','),
+        //desc_estado_aprobacion: asegurarArray(group.estado).join(','),
+        cobertura_servicio: JSON.stringify(coberturaJSON.filter(key => key.cliente === cliente)) || '',
+        ronda_vigilancia: ronda_vigilancia,  // Ahora la ronda_vigilancia tiene el filtro con el periodo correcto
+        control_acceso: control_acceso,  // Ahora el control_acceso tiene el filtro con el periodo correcto
+        reporte_custodia: JSON.stringify(custodiaJSON.filter(key => key.cliente === cliente)) || '',
+        incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
+        novedades_reportadas: JSON.stringify([group]) || '',
+        // cambio_nomina_personal: JSON.stringify(nominaJSON.filter(key => key.cliente === group.cliente)) || '',
+        // acciones_correctivas: JSON.stringify(accionJSON.filter(key => key.cliente === group.cliente)) || '',
+        // valores_agregados: JSON.stringify(valorJSON.filter(key => key.cliente === group.cliente)) || '',
+        // conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
+        //recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === group.cliente)) || '' // Se pasa el JSON de recomendaciones
+    }).toString()}`;
+
+    // Redirigir al usuario para generar el PDF
+    window.location.href = url;
+}
+
+
+        function handleButtonClick(index, cliente, groupJSON, event) {
             // Llamar a la función con los parámetros correctos
-            actualizarFechaYGenerarPDF(index, nombre_generico, cliente, JSON.parse(groupJSON), event);
+            console.log("groupJSON",JSON.parse(groupJSON));
+            actualizarFechaYGenerarPDF(index, cliente, JSON.parse(groupJSON), event);
         }
 
-        async function actualizarFechaYGenerarPDF(index, nombre_generico, cliente, group, event) {
+        async function actualizarFechaYGenerarPDF(index, cliente, group, event) {
             event.preventDefault(); // Esto ahora debería funcionar sin problemas
             const loadingScreen = document.querySelector('.loading');
             loadingScreen.style.display = 'flex';
@@ -432,8 +459,10 @@ function obtenerMesNumerico(mes) {
                 }
 
                 const data = await response.json();
+                console.log("data",data);  // Verifica qué contiene el objeto 'data'
 
-                if (data.success) {
+
+                if (data.success ) {
                     // Solo actualizamos la columna "Fecha de Reporte"
                     const fechaCell = event.target.closest('tr').querySelector('td:nth-child(4)'); // Columna de fecha reporte
                     fechaCell.textContent = fechaActual; // Actualizar solo la fecha
@@ -442,7 +471,7 @@ function obtenerMesNumerico(mes) {
                     group.fecha_reporte = fechaActual; // Actualiza el objeto en el cliente
 
                     // Llamamos a la función para generar el PDF con los datos actualizados
-                    generarPDF(index, nombre_generico, cliente, group);
+                    generarPDF(index, cliente, group);
                 } else {
                     throw new Error('No se pudo actualizar la fecha');
                 }
@@ -462,17 +491,16 @@ function esFechaPosteriorAlDia5() {
 }
 
 // Fetch para cargar los detalles de los datos
-fetch('/detalles')
+fetch('/novedades')
     .then(response => response.json())
     .then(data => {
+        console.log(data); // Verifica que los datos son los esperados
         const groupedData = {};
-        const clienteMap = {}; // Mapa para asociar un cliente con un número genérico
-        let clienteCounter = 1; // Contador para asignar un nombre genérico a cada cliente
+        const clienteMap = {};
+        let clienteCounter = 1;
 
-        // Verificar si la fecha actual es igual o mayor al día 5 del mes actual
         const incluirMesAnterior = esFechaPosteriorAlDia5();
 
-        // Obtener la fecha actual
         const hoy = new Date();
         const mesActual = hoy.getMonth(); // Mes actual (0 - 11)
         const anioActual = hoy.getFullYear(); // Año actual
@@ -480,77 +508,70 @@ fetch('/detalles')
         // Agrupar los datos
         data.forEach(detalle => {
             const fechaNovedad = new Date(detalle.fecha_novedad);
-            const mesFecha = fechaNovedad.getMonth(); // Mes de la fecha de novedad (0 - 11)
-            const anioFecha = fechaNovedad.getFullYear(); // Año de la fecha de novedad
+            const mesFecha = fechaNovedad.getMonth();
+            const anioFecha = fechaNovedad.getFullYear();
 
-            // Determinar si la fecha debe ser incluida dependiendo de la condición de fecha
             if (incluirMesAnterior) {
-                // Si estamos después del día 5, incluir fechas de meses anteriores (excepto el mes actual)
                 if (anioFecha < anioActual || (anioFecha === anioActual && mesFecha < mesActual)) {
-                    // Agrupar por cliente y periodo
                     const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
-                    const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
+                    const key = `${detalle.cliente}-${periodo}-${detalle.fecha_reporte}`;
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
-                            desc_cliente: detalle.desc_cliente,
+                            desc_cliente: detalle.cliente,
                             periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
-                            desc_localidad: detalle.desc_localidad,
+                            desc_localidad: detalle.tx_localidad,
+                            tipo_novedad: detalle.TIPO_NOVEDAD,
+                            detalle: detalle.detalle,
+                            tipo_hallazgo: detalle.desc_tipo_hallazgo,
                         };
                     }
                     groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
                 }
             } else {
-                // Si estamos antes del día 5, solo incluir fechas de meses anteriores (no del mes actual)
                 if (anioFecha < anioActual || (anioFecha === anioActual && mesFecha < mesActual)) {
-                    // Agrupar por cliente y periodo
                     const periodo = obtenerNombreMesYAnio(detalle.fecha_novedad);
-                    const key = `${detalle.desc_cliente}-${periodo}-${detalle.fecha_reporte}`;
+                    const key = `${detalle.cliente}-${periodo}-${detalle.fecha_reporte}`;
 
                     if (!groupedData[key]) {
                         groupedData[key] = {
-                            desc_cliente: detalle.desc_cliente,
+                            desc_cliente: detalle.cliente,
                             periodo: periodo,
                             fecha_reporte: detalle.fecha_reporte,
                             fecha_novedad: [],
-                            desc_localidad: detalle.desc_localidad,
+                            desc_localidad: detalle.tx_localidad,
+                            tipo_novedad: detalle.TIPO_NOVEDAD,
+                            detalle: detalle.detalle,
+                            tipo_hallazgo: detalle.desc_tipo_hallazgo,
                         };
                     }
                     groupedData[key].fecha_novedad.push(detalle.fecha_novedad);
                 }
-            }
-
-            // Asignar nombre genérico al cliente
-            if (!clienteMap[detalle.desc_cliente]) {
-                clienteMap[detalle.desc_cliente] = `Cliente ${clienteCounter++}`; // Asignar un nombre genérico
             }
         });
 
         // Llenar la tabla
         const detallesTable = document.getElementById('detallesTable');
         let index = 1;
-        
 
         Object.keys(groupedData).forEach(key => {
             const group = groupedData[key];
+
+            console.log("group",group);
             const groupJSON = JSON.stringify(group)
                 .replace(/'/g, "\\'")  
                 .replace(/"/g, '&quot;'); 
 
-            // Obtener el nombre genérico del cliente desde el mapa
-            const clienteGenerico = clienteMap[group.desc_cliente];
-           
-
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index++}</td>
-                <td>${group.desc_cliente} ${clienteGenerico} </td>
-                <td>${group.periodo}</td>  <!-- Aquí se muestra el periodo -->
-                <td>${group.fecha_reporte}</td>
+                <td>${group.desc_cliente} </td> <!-- Cliente -->
+                <td>${group.periodo}</td>  <!-- Periodo -->
+                <td>${group.fecha_reporte}</td> <!-- Fecha Reporte -->
                 <td>
-                    <button onclick="handleButtonClick(${index}, '${clienteGenerico}' , '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
+                    <button onclick="handleButtonClick(${index}, '${group.desc_cliente}', '${groupJSON}', event)" class="btn-report">
                         &#128190; Generar Reporte
                     </button>
                 </td>
@@ -561,6 +582,7 @@ fetch('/detalles')
     .catch(error => {
         console.error('Error al cargar los detalles:', error);
     });
+
 
 
      

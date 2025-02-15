@@ -38,7 +38,7 @@ public function actualizarFechaReporte(Request $request)
     // Actualizar todos los registros de "fecha_novedad" correspondientes a ese cliente
     try {
         // Si tienes una relación de cliente a detalles, puedes hacer algo como esto:
-        Detalle::where('desc_cliente', $cliente)
+        Novedad::where('cliente', $cliente)
             ->whereIn('fecha_novedad', $fechas_novedad) // Filtramos por las fechas de novedad
             ->update(['fecha_reporte' => $fecha_reporte]); // Actualizamos la fecha del reporte
 
@@ -1229,7 +1229,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
             foreach ($novedades_reportadas as $item) {
                 // Acceder a los campos 'novedad', 'txt_localidad' y 'detalle' dentro de cada objeto
                 $novedad = isset($item['tipo_novedad']) ? $item['tipo_novedad'] : '';
-                $txt_localidad = isset($item['txt_localidad']) ? $item['txt_localidad'] : '';
+                $txt_localidad = isset($item['desc_localidad']) ? $item['desc_localidad'] : '';
                 $detalle = isset($item['detalle']) ? $item['detalle'] : '';
                 
                 // Concatenar los datos de cada novedad
@@ -1244,9 +1244,12 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
 
         
 
-        if (isset($datos['novedades_reportadas']) && is_string($datos['novedades_reportadas'])) {
+        if (isset($datos['novedades_reportadas'])) {
+             // Verifica qué contiene esta variable
+
             // Convertir la cadena en un array, separando por coma
             $novedades_reportadas = json_decode($datos['novedades_reportadas'], true);
+
            
  
         }
@@ -1255,7 +1258,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         $totalGeneral = 0;
 
         if (isset($novedades_reportadas) && is_array($novedades_reportadas)) {
-            // Convertir el array a una colección para usar las funciones de Laravel
+        
             $novedades = collect($novedades_reportadas);
             
             // Agrupar por id_localidad
@@ -1270,11 +1273,11 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
             // Recorrer los grupos de novedades agrupados por id_localidad
             foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
                 // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
-                $txtLocalidad = $grupo->first()['txt_localidad'];
+                $txtLocalidad = $grupo->first()['desc_localidad'];
             
                 // Contar los valores no vacíos en cada campo
                 $countTitulo = $grupo->whereNotNull('titulo')->count();
-                $countTipoNovedad = $grupo->whereNotNull('TIPO_NOVEDAD')->count();
+                $countTipoNovedad = $grupo->whereNotNull('tipo_novedad')->count();
                 $countTipoHallazgo = $grupo->whereNotNull('tipo_hallazgo')->count();
             
                 // Calcular la suma de los tres conteos
@@ -1581,11 +1584,11 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         // Recorrer los grupos de novedades agrupados por id_localidad
         foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
             // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
-            $txtLocalidad = $grupo->first()['txt_localidad'];
+            $txtLocalidad = $grupo->first()['desc_localidad'];
     
             // Contar los valores no vacíos en cada campo
             $countTitulo = $grupo->whereNotNull('titulo')->count();
-            $countTipoNovedad = $grupo->whereNotNull('TIPO_NOVEDAD')->count();
+            $countTipoNovedad = $grupo->whereNotNull('tipo_novedad')->count();
             $countTipoHallazgo = $grupo->whereNotNull('tipo_hallazgo')->count();
     
             // Calcular la suma de los tres conteos
