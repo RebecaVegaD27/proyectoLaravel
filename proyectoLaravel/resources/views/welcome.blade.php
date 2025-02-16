@@ -402,8 +402,14 @@ function obtenerPeriodo(fecha) {
     // Comparar con el periodo de control_acceso
     const control_acceso = JSON.stringify(controlJSON.filter(key => {
         const periodoControl = obtenerPeriodo(key.fecha);  // Formatear 'created_at' de control_acceso
-        return key.tx_cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+        console.log("periodoControl acceso",periodoControl);
+        console.log("group.periodo acceso",group.periodo);
+        if (key.tx_cliente === cliente && periodoControl === group.periodo) {
+            console.log("si acceso");
+        }
+        return key.tx_cliente.trim() === cliente.trim() && periodoControl.trim() === group.periodo.trim();  // Comparar periodo
     })) || '';
+    console.log("control_acceso", control_acceso)
 
     // Comparar con el periodo de cobertura
     const cobertura= JSON.stringify(coberturaJSON.filter(key => {
@@ -445,11 +451,11 @@ function obtenerPeriodo(fecha) {
     //recomendacionesJSON
 
     const recomendacion = JSON.stringify(recomendacionesJSON.filter(key => {
-        console.log("key",key);
-        const periodoControl = obtenerPeriodo(key.fecha_novedad);
-        console.log("periodoControl",periodoControl);
-        console.log("group.periodo",group.periodo);
-        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+       // console.log("key",key);
+        const periodoControlrecomen = obtenerPeriodo(key.fecha_novedad);
+        // console.log("periodoControlrecomen",periodoControlrecomen);
+        // console.log("group.periodo recomen",group.periodo);
+        return key.cliente === cliente && periodoControlrecomen === group.periodo;  // Comparar periodo
     })) || '';
 
     console.log("recomendacion", recomendacion)
