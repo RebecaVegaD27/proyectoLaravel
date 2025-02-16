@@ -441,7 +441,18 @@ function obtenerPeriodo(fecha) {
         return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
 
-    console.log("accion", accion)
+
+    //recomendacionesJSON
+
+    const recomendacion = JSON.stringify(recomendacionesJSON.filter(key => {
+        console.log("key",key);
+        const periodoControl = obtenerPeriodo(key.fecha_novedad);
+        console.log("periodoControl",periodoControl);
+        console.log("group.periodo",group.periodo);
+        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+    console.log("recomendacion", recomendacion)
 
 
     const url = `/generar-pdf?${new URLSearchParams({
@@ -479,7 +490,7 @@ function obtenerPeriodo(fecha) {
         acciones_correctivas: accion,
         valores_agregados: valor,
         conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
-        recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === cliente)) || '' // Se pasa el JSON de recomendaciones
+        recomendaciones: recomendacion // Se pasa el JSON de recomendaciones
     }).toString()}`;
 
     // Redirigir al usuario para generar el PDF
@@ -534,11 +545,11 @@ function obtenerPeriodo(fecha) {
                     // Llamamos a la función para generar el PDF con los datos actualizados
                     generarPDF(index, cliente, group);
                 } else {
-                    throw new Error('No se pudo actualizar la fecha');
+                    throw new Error('Hubo un error al generar el reporte');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Hubo un error al actualizar la fecha del reporte');
+                alert('Hubo un error al generar el reporte');
             } finally {
                 loadingScreen.style.display = 'none';
             }
@@ -568,6 +579,17 @@ fetch('/novedades')
 
         // Agrupar los datos
         data.forEach(detalle => {
+            
+//                             // Convertir fecha a string si no lo es
+// const fechaString = new Date(detalle.fecha_novedad);
+
+// // Obtener el año y mes de la fecha original
+// const anio = fechaString.getFullYear();
+// const mes = fechaString.getMonth();
+
+// // Crear una nueva fecha ajustada al primer día del mes
+// const fechaNovedad = new Date(anio, mes, 1);
+
             const fechaNovedad = new Date(detalle.fecha_novedad);
             const mesFecha = fechaNovedad.getMonth();
             const anioFecha = fechaNovedad.getFullYear();

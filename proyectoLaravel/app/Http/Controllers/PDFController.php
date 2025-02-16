@@ -501,7 +501,7 @@ public function accion()
                     $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
         
                     // Escribir el contenido dentro de la celda con MultiCell
-                    $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+                    $this->pdf->MultiCell($colWidths[$index], 5, utf8_decode((string)$content), 0, 'C'); // Cambié a 'C' para centrar el texto
         
                     // Volver a la posición derecha para la siguiente celda
                     $this->pdf->SetXY($x + $colWidths[$index], $y);
@@ -696,7 +696,7 @@ if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
             $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
 
             // Escribir el contenido dentro de la celda con MultiCell
-            $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+            $this->pdf->MultiCell($colWidths[$index], 5, utf8_decode((string)$content), 0, 'C'); // Cambié a 'C' para centrar el texto
 
             // Volver a la posición derecha para la siguiente celda
             $this->pdf->SetXY($x + $colWidths[$index], $y);
@@ -969,7 +969,7 @@ $this->pdf->SetX($margenOriginal);
                 $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
     
                 // Escribir el contenido dentro de la celda con MultiCell
-                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+                $this->pdf->MultiCell($colWidths[$index], 5, utf8_decode((string)$content), 0, 'C'); // Cambié a 'C' para centrar el texto
     
                 // Volver a la posición derecha para la siguiente celda
                 $this->pdf->SetXY($x + $colWidths[$index], $y);
@@ -1202,7 +1202,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
             $cellHeight = $lineCount * 5;
             $maxHeight = max($maxHeight, $cellHeight);
         }
-        $maxHeight = $maxHeight + 5;
+        $maxHeight = $maxHeight + 15;
 
         // Verificar espacio disponible considerando el pie de página
         $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
@@ -1219,7 +1219,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         foreach ($data as $i => $content) {
             $x = $this->pdf->GetX();
             $this->pdf->Rect($x, $startY, $colWidths[$i], $maxHeight);
-            $this->pdf->MultiCell($colWidths[$i], 5, (string)$content, 0, 'C');
+            $this->pdf->MultiCell($colWidths[$i], 5, utf8_decode((string)$content), 0, 'C');
             $this->pdf->SetXY($x + $colWidths[$i], $startY);
         }
 
@@ -1678,7 +1678,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
                 $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
     
                 // Escribir el contenido dentro de la celda con MultiCell
-                $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C');
+                $this->pdf->MultiCell($colWidths[$index], 5, utf8_decode((string)$content), 0, 'C');
     
                 // Volver a la posición derecha para la siguiente celda
                 $this->pdf->SetXY($x + $colWidths[$index], $y);
@@ -1926,7 +1926,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
                     $this->pdf->Rect($x, $y, $colWidths[$index], $maxHeight);
         
                     // Escribir el contenido dentro de la celda con MultiCell
-                    $this->pdf->MultiCell($colWidths[$index], 5, (string)$content, 0, 'C'); // Cambié a 'C' para centrar el texto
+                    $this->pdf->MultiCell($colWidths[$index], 5, utf8_decode((string)$content), 0, 'C'); // Cambié a 'C' para centrar el texto
         
                     // Volver a la posición derecha para la siguiente celda
                     $this->pdf->SetXY($x + $colWidths[$index], $y);
@@ -2031,13 +2031,59 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         $this->pdf->SetX($margenOriginal);
 
   
-       if (isset($recomendaciones) && is_array($recomendaciones)) {
+        if (isset($recomendaciones) && is_array($recomendaciones)) {
+
+                    // Cabecera de la tabla
+        $header = array(
+            'INCIDENCIA',
+            'FRECUENCIA',
+            'RECOMENDACION');
+            $colWidths = array(75, 30, 90);
+
+            $margenOriginal = 10;
+            $margenInferior = 15;
+            $alturaPiePagina = 20; // Altura estimada del pie de página
+        
+            $this->pdf->SetX($margenOriginal);
+            
+            $index = 1;
             foreach ($recomendaciones as $row) {
+                $data = [
+                    $row['titulo'],
+                    $row['frecuencia'],
+                    $row['recomendacion']
+                ];
+        
+                // Calcular altura máxima de la fila
+                $maxHeight = 0;
+                foreach ($data as $i => $content) {
+                    $lineCount = ceil($this->pdf->GetStringWidth((string)$content) / $colWidths[$i]);
+                    $cellHeight = $lineCount * 5;
+                    $maxHeight = max($maxHeight, $cellHeight);
+                }
+                $maxHeight = $maxHeight + 5;
+        
+                // Verificar espacio disponible considerando el pie de página
+                $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
                 
-                $this->pdf->Cell(75, 10, $row['titulo'], 1, 0, 'C');  // Columna Titulo
-                $this->pdf->Cell(30, 10, $row['frecuencia'], 1, 0, 'C');  // Columna Frecuencia
-                $this->pdf->Cell(90, 10, $row['recomendacion'], 1, 'J');  // Columna Recomenda
-                 $this->pdf->SetX($margenOriginal);
+                if ($maxHeight > $espacioDisponible) {
+                    $this->pdf->AddPage();
+                    $this->pdf->SetX($margenOriginal);
+                }
+        
+                // Guardar posición Y inicial de la fila
+                $startY = $this->pdf->GetY();
+                
+                // Dibujar todas las celdas de la fila
+                foreach ($data as $i => $content) {
+                    $x = $this->pdf->GetX();
+                    $this->pdf->Rect($x, $startY, $colWidths[$i], $maxHeight);
+                    $this->pdf->MultiCell($colWidths[$i], 5, utf8_decode((string)$content), 0, 'C');
+                    $this->pdf->SetXY($x + $colWidths[$i], $startY);
+                }
+        
+                $this->pdf->Ln($maxHeight);
+                $this->pdf->SetX($margenOriginal);
             }
         }
 
