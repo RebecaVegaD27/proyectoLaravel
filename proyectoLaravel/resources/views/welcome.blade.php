@@ -353,18 +353,36 @@ function obtenerMesNumerico(mes) {
     };
 
     // Función para convertir la fecha en el formato "MES AÑO"
-    function obtenerPeriodo(fecha) {
-        const meses = [
-            'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
-        ];
+  
+//     function obtenerPeriodo(fecha) {
+//     const meses = [
+//         'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+//     ];
 
-        
-        const date = new Date(fecha);  // Convertir el created_at (o cualquier fecha) en un objeto Date
-        const mes = meses[date.getMonth()+1];  // Obtiene el mes (0 - 11)
-        const anio = date.getFullYear();    // Obtiene el año
+//     const date = new Date(fecha);
+//       // Convertir la fecha a un objeto Date
+//     const mes = meses[date.getMonth()];  // Obtiene el mes (0 - 11)
+//     const anio = date.getFullYear();    // Obtiene el año
 
-        return `${mes} ${anio}`;
-    }
+//     return `${mes} ${anio}`;
+// }
+function obtenerPeriodo(fecha) {
+    const meses = [
+        'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+
+    const date = new Date(fecha);
+
+    // Ajustar al primer día del mes
+    date.setDate(1);  // Establece el día al 1 de ese mes
+
+    const mes = meses[date.getMonth()+1];  // Obtiene el mes (0 - 11)
+    const anio = date.getFullYear();    // Obtiene el año
+
+    return `${mes} ${anio}`;
+}
+
+
 
     // Obtener el periodo de created_at en formato "MES AÑO"
     const periodoCreado = obtenerPeriodo(group.fecha_reporte); // Usar 'fecha_reporte' o la que necesites
@@ -381,16 +399,34 @@ function obtenerMesNumerico(mes) {
         return key.tx_cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
 
-    // Comparar con el periodo de custodias
+    // Comparar con el periodo de cobertura
     const cobertura= JSON.stringify(coberturaJSON.filter(key => {
         const periodoControl = obtenerPeriodo(key.fecha);  
+        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+    // Comparar con el periodo de custodias
+    const custodia= JSON.stringify(custodiaJSON.filter(key => {
+        const periodoControl = obtenerPeriodo(key.fecha);  
+        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+
+    const nominas= JSON.stringify(nominaJSON.filter(key => {
+        console.log("key",key);
+        const periodoControl = obtenerPeriodo(key.fecha_salida);
+        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+
+    const valor= JSON.stringify(valorJSON.filter(key => {
+        console.log("key",key);
+        const periodoControl = obtenerPeriodo(key.fecha);
         console.log("periodoControl",periodoControl);
         console.log("group.periodo",group.periodo);
         return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
 
-    console.log("cobertura", cobertura);
-    console.log("grupo final", group);
 
     const url = `/generar-pdf?${new URLSearchParams({
         cliente: cliente,  // Nombre genérico del cliente
@@ -420,12 +456,12 @@ function obtenerMesNumerico(mes) {
         cobertura_servicio: cobertura,
         ronda_vigilancia: ronda_vigilancia,  // Ahora la ronda_vigilancia tiene el filtro con el periodo correcto
        control_acceso: control_acceso,  // Ahora el control_acceso tiene el filtro con el periodo correcto
-        reporte_custodia: JSON.stringify(custodiaJSON.filter(key => key.cliente === cliente)) || '',
+        reporte_custodia: custodia,
         incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
         novedades_reportadas: JSON.stringify([group]) || '',
-        cambio_nomina_personal: JSON.stringify(nominaJSON.filter(key => key.cliente === cliente)) || '',
+        cambio_nomina_personal:nominas, 
         acciones_correctivas: JSON.stringify(accionJSON.filter(key => key.cliente === cliente)) || '',
-        valores_agregados: JSON.stringify(valorJSON.filter(key => key.desc_cliente === cliente)) || '',
+        valores_agregados: valor,
         conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
         recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === cliente)) || '' // Se pasa el JSON de recomendaciones
     }).toString()}`;
