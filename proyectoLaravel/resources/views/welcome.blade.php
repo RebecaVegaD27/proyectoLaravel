@@ -371,13 +371,13 @@ function obtenerMesNumerico(mes) {
     // Comparar con el periodo de group
     const ronda_vigilancia = JSON.stringify(rondasJSON.filter(key => {
         const periodoRonda = obtenerPeriodo(key.created_at);  // Formatear 'created_at' de ronda
-        return key.tx_cliente === group.cliente && periodoRonda === group.periodo;  // Comparar periodo
+        return key.tx_cliente === cliente && periodoRonda === group.periodo;  // Comparar periodo
     })) || '';
 
     // Comparar con el periodo de control_acceso
     const control_acceso = JSON.stringify(controlJSON.filter(key => {
-        const periodoControl = obtenerPeriodo(key.created_at);  // Formatear 'created_at' de control_acceso
-        return key.tx_cliente === group.cliente && periodoControl === group.periodo;  // Comparar periodo
+        const periodoControl = obtenerPeriodo(key.fecha);  // Formatear 'created_at' de control_acceso
+        return key.tx_cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
 
     console.log("desc_localidad", group.desc_localidad);
@@ -387,7 +387,7 @@ function obtenerMesNumerico(mes) {
         cliente: cliente,  // Nombre genérico del cliente
         id: index,  // Asegúrate de incluir el ID si lo necesitas
         periodo: group.periodo || '',  // Añadir periodo aquí
-        destinatario:  '', // Valida si 'destinatario' existe
+        destinatario:  '', // Valida si 'destinatario' existe 
         fecha_reporte: group.fecha_reporte || '', // Valida si 'fecha_reporte' existe
         fecha_novedad: asegurarArray(group.fecha_novedad).join(','),
         //desc_codigo: asegurarArray(group.desc_codigo).join(','),
@@ -410,15 +410,15 @@ function obtenerMesNumerico(mes) {
         //desc_estado_aprobacion: asegurarArray(group.estado).join(','),
         cobertura_servicio: JSON.stringify(coberturaJSON.filter(key => key.cliente === cliente)) || '',
         ronda_vigilancia: ronda_vigilancia,  // Ahora la ronda_vigilancia tiene el filtro con el periodo correcto
-        control_acceso: control_acceso,  // Ahora el control_acceso tiene el filtro con el periodo correcto
+       control_acceso: control_acceso,  // Ahora el control_acceso tiene el filtro con el periodo correcto
         reporte_custodia: JSON.stringify(custodiaJSON.filter(key => key.cliente === cliente)) || '',
         incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
         novedades_reportadas: JSON.stringify([group]) || '',
-        // cambio_nomina_personal: JSON.stringify(nominaJSON.filter(key => key.cliente === group.cliente)) || '',
-        // acciones_correctivas: JSON.stringify(accionJSON.filter(key => key.cliente === group.cliente)) || '',
-        // valores_agregados: JSON.stringify(valorJSON.filter(key => key.cliente === group.cliente)) || '',
-        // conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
-        //recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === group.cliente)) || '' // Se pasa el JSON de recomendaciones
+        cambio_nomina_personal: JSON.stringify(nominaJSON.filter(key => key.cliente === cliente)) || '',
+        acciones_correctivas: JSON.stringify(accionJSON.filter(key => key.cliente === cliente)) || '',
+        valores_agregados: JSON.stringify(valorJSON.filter(key => key.desc_cliente === cliente)) || '',
+        conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
+        recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === cliente)) || '' // Se pasa el JSON de recomendaciones
     }).toString()}`;
 
     // Redirigir al usuario para generar el PDF
