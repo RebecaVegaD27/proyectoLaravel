@@ -445,6 +445,7 @@ public function accion()
         $this->pdf->SetX($margenOriginal);
         
         if (isset($cobertura_servicio) && is_array($cobertura_servicio)) {
+            
             // Definir los anchos de las columnas
             $colWidths = [40, 50, 15, 15, 20, 20, 30]; // Ajusta estos valores según el diseño
             $margenOriginal = 10;

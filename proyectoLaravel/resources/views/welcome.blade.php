@@ -358,8 +358,9 @@ function obtenerMesNumerico(mes) {
             'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
         ];
 
+        
         const date = new Date(fecha);  // Convertir el created_at (o cualquier fecha) en un objeto Date
-        const mes = meses[date.getMonth()];  // Obtiene el mes (0 - 11)
+        const mes = meses[date.getMonth()+1];  // Obtiene el mes (0 - 11)
         const anio = date.getFullYear();    // Obtiene el año
 
         return `${mes} ${anio}`;
@@ -380,7 +381,15 @@ function obtenerMesNumerico(mes) {
         return key.tx_cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
 
-    console.log("desc_localidad", group.desc_localidad);
+    // Comparar con el periodo de custodias
+    const cobertura= JSON.stringify(coberturaJSON.filter(key => {
+        const periodoControl = obtenerPeriodo(key.fecha);  
+        console.log("periodoControl",periodoControl);
+        console.log("group.periodo",group.periodo);
+        return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+    console.log("cobertura", cobertura);
     console.log("grupo final", group);
 
     const url = `/generar-pdf?${new URLSearchParams({
@@ -408,7 +417,7 @@ function obtenerMesNumerico(mes) {
         //fecha_envio_novedad: asegurarArray(group.fecha_envio_novedad).join(','),
         //desc_estado_novedad: asegurarArray(group.estado_novedad).join(','),
         //desc_estado_aprobacion: asegurarArray(group.estado).join(','),
-        cobertura_servicio: JSON.stringify(coberturaJSON.filter(key => key.cliente === cliente)) || '',
+        cobertura_servicio: cobertura,
         ronda_vigilancia: ronda_vigilancia,  // Ahora la ronda_vigilancia tiene el filtro con el periodo correcto
        control_acceso: control_acceso,  // Ahora el control_acceso tiene el filtro con el periodo correcto
         reporte_custodia: JSON.stringify(custodiaJSON.filter(key => key.cliente === cliente)) || '',
