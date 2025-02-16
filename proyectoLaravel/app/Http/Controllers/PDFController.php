@@ -447,6 +447,9 @@ public function accion()
         if (isset($cobertura_servicio) && is_array($cobertura_servicio)) {
             // Definir los anchos de las columnas
             $colWidths = [40, 50, 15, 15, 20, 20, 30]; // Ajusta estos valores según el diseño
+            $margenOriginal = 10;
+            $margenInferior = 15;
+            $alturaPiePagina = 20; // Altura estimada del pie de página
         
             // Inicializar las variables de suma
             $totalVenticuatroh = 0;
@@ -478,6 +481,15 @@ public function accion()
                 }
         
                 $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+        
+                // Verificar espacio disponible para la fila (considerando el pie de página)
+                $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+        
+                // Si la fila no cabe, agregar una nueva página
+                if ($maxHeight > $espacioDisponible) {
+                    $this->pdf->AddPage();
+                    $this->pdf->SetX($margenOriginal); // Ajustar la posición de la fila
+                }
         
                 // Dibujar las celdas de la fila con la misma altura máxima
                 foreach ($data as $index => $content) {
@@ -516,6 +528,7 @@ public function accion()
             $this->pdf->Cell(20, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'dias'
             $this->pdf->Cell(30, 5, '', 1, 0, 'C', true);  // Columna vacía para la columna 'ciudad'
         }
+        
         
         
         
@@ -632,9 +645,14 @@ if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
     // Definir los anchos de las columnas
     $colWidths = [40, 30, 40]; // Ajusta estos valores según el diseño
 
+    // Definir márgenes
+    $margenOriginal = 10; // Margen izquierdo
+    $margenInferior = 15; // Margen inferior
+    $alturaPiePagina = 20; // Altura del pie de página
+
     // Recorrer los grupos de rondas agrupados por id_localidad
     foreach ($rondasAgrupadas as $idLocalidad => $grupo) {
-        // Obtener el valor de txt_localidad del primer elemento del grupo (asumiendo que todos los elementos tienen el mismo valor para txt_localidad)
+        // Obtener el valor de txt_localidad del primer elemento del grupo
         $txtLocalidad = $grupo->first()['tx_localidad'];
 
         // Sumar los valores de num_marcaciones y rondas_generadas
@@ -655,8 +673,17 @@ if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
             $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
             $lineCount = ceil($lineCount); // Redondear hacia arriba
             $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
-            $maxHeight = max($maxHeight, $cellHeight); 
+            $maxHeight = max($maxHeight, $cellHeight);
             $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+        }
+
+        // Verificar si hay suficiente espacio para la fila en la página actual
+        $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+        
+        // Si la fila no cabe, agregar una nueva página
+        if ($maxHeight > $espacioDisponible) {
+            $this->pdf->AddPage();
+            $this->pdf->SetX($margenOriginal); // Ajustar la posición de la fila
         }
 
         // Dibujar las celdas de la fila con la misma altura máxima
@@ -676,7 +703,7 @@ if (isset($ronda_vigilancia) && is_array($ronda_vigilancia)) {
 
         // Saltar a la siguiente fila
         $this->pdf->Ln($maxHeight);
-        $this->pdf->SetX($margenOriginal);
+        $this->pdf->SetX($margenOriginal); // Ajustar la posición para la siguiente fila
     }
 }
 
@@ -888,9 +915,13 @@ $this->pdf->SetX($margenOriginal);
         $totalEmpresa = 0;
         $totalFila = 0;  // Total por fila para cada grupo
     
+        $margenOriginal = 10;
+        $margenInferior = 15;
+        $alturaPiePagina = 20; // Altura estimada del pie de página
+    
         // Recorrer los grupos agrupados por id_localidad
         foreach ($agrupadoPorLocalidad as $idLocalidad => $grupo) {
-            // Obtener el valor de txt_localidad del primer elemento del grupo (suponiendo que todos los elementos tienen el mismo valor para txt_localidad)
+            // Obtener el valor de txt_localidad del primer elemento del grupo
             $txtLocalidad = $grupo->first()['tx_localidad'];
     
             // Realizar el count distinct de los campos
@@ -917,6 +948,15 @@ $this->pdf->SetX($margenOriginal);
                 $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
                 $maxHeight = max($maxHeight, $cellHeight); 
                 $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+            }
+    
+            // Verificar si hay suficiente espacio en la página
+            $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+    
+            if ($maxHeight > $espacioDisponible) {
+                // Si no hay suficiente espacio, agregar una nueva página
+                $this->pdf->AddPage();
+                $this->pdf->SetX($margenOriginal);
             }
     
             // Dibujar las celdas de la fila con la misma altura máxima
@@ -954,18 +994,18 @@ $this->pdf->SetX($margenOriginal);
         // Mostrar los totales generales al pie de la tabla
         $this->pdf->SetXY($margenOriginal, $this->pdf->GetY()); // Ajustar la posición para los totales
         $this->pdf->SetFillColor(200, 200, 200); // Color gris claro para el pie de tabla
-       
-        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1); // Agregar 1 al parámetro fill
-$this->pdf->Cell($colWidths[1], 10, $totalEmpleado, 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[2], 10, $totalVisitante, 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[3], 10, $totalEmpresa, 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[4], 10, $totalCliente, 1, 0, 'C', 1);
-$this->pdf->Cell($colWidths[5], 10, $totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 1, 0, 'C', 1);
-
-        
+    
+        $this->pdf->Cell($colWidths[0], 10, 'TOTAL GENERAL', 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[1], 10, $totalEmpleado, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[2], 10, $totalVisitante, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[3], 10, $totalEmpresa, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[4], 10, $totalCliente, 1, 0, 'C', 1);
+        $this->pdf->Cell($colWidths[5], 10, $totalEmpleado + $totalVisitante + $totalCliente + $totalEmpresa, 1, 0, 'C', 1);
+    
         // El salto de línea final
         $this->pdf->Ln(10);
     }
+    
 
      // Restaurar color
      $this->pdf->SetFillColor(224, 235, 255);
@@ -1580,6 +1620,11 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         $totalTipoNovedad = 0;
         $totalTipoHallazgo = 0;
         $totalGeneral = 0; // Total general que suma las tres columnas
+        
+        // Definir márgenes y altura del pie de página
+        $margenOriginal = 10;
+        $margenInferior = 15;
+        $alturaPiePagina = 20;
     
         // Recorrer los grupos de novedades agrupados por id_localidad
         foreach ($novedadesAgrupadas as $idLocalidad => $grupo) {
@@ -1612,6 +1657,15 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
                 $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
                 $maxHeight = max($maxHeight, $cellHeight); 
                 $maxHeight = $maxHeight + 1; // Tomar la altura máxima
+            }
+    
+            // Verificar si hay suficiente espacio en la página actual
+            $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+    
+            // Si no hay suficiente espacio, agregar una nueva página
+            if ($maxHeight > $espacioDisponible) {
+                $this->pdf->AddPage();
+                $this->pdf->SetX($margenOriginal);
             }
     
             // Dibujar las celdas de la fila con la misma altura máxima
@@ -1652,6 +1706,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         // El salto de línea final
         $this->pdf->Ln(10);
     }
+    
     
        
 
@@ -1710,19 +1765,39 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
 
         $this->pdf->SetX($margenOriginal);
 
-if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
-    $index=1;
-    foreach ($cambio_nomina_personal as $row) {
-        $this->pdf->Cell(10, 10, $index, 1, 0, 'C');  // Columna índice
-        $this->pdf->Cell(75, 10, $row['apellido_nombre'], 1, 0, 'C');  // Columna Titulo
-        $this->pdf->Cell(40, 10, $row['puesto'], 1, 0, 'C');  // Columna 'rondas_generadas'
-        $this->pdf->Cell(30, 10, $row['fecha_ingreso'], 1, 0, 'C');  // Columna 'num_marcaciones'
-        $this->pdf->Cell(30, 10, $row['fecha_salida'], 1, 0, 'C');  // Columna 'num_marcaciones'
-        $this->pdf->Ln(); 
-        $this->pdf->SetX($margenOriginal); // Ajuste de la posición de la celda
-        $index++;
-    }
-}
+        if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
+            $index = 1;
+            $alturaFila = 10;  // Altura de cada fila (en este caso, 10)
+            $margenOriginal = 10;  // Definir el margen original en el eje X
+        
+            foreach ($cambio_nomina_personal as $row) {
+                // Calcular espacio disponible en la página
+                $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - 15; // 15 es el margen inferior
+        
+                // Si no hay suficiente espacio para la fila, agregamos una nueva página
+                if ($espacioDisponible < $alturaFila) {
+                    $this->pdf->AddPage();  // Agregar nueva página
+                    $this->pdf->SetX($margenOriginal); // Ajustar la posición de la celda
+                }
+        
+                // Imprimir las celdas de la fila
+                $this->pdf->Cell(10, $alturaFila, $index, 1, 0, 'C');  // Columna índice
+                $this->pdf->Cell(75, $alturaFila, $row['apellido_nombre'], 1, 0, 'C');  // Columna Titulo
+                $this->pdf->Cell(40, $alturaFila, $row['puesto'], 1, 0, 'C');  // Columna 'rondas_generadas'
+                $this->pdf->Cell(30, $alturaFila, $row['fecha_ingreso'], 1, 0, 'C');  // Columna 'num_marcaciones'
+                $this->pdf->Cell(30, $alturaFila, $row['fecha_salida'], 1, 0, 'C');  // Columna 'num_marcaciones'
+                
+                // Salto de línea para la siguiente fila
+                $this->pdf->Ln(); 
+                
+                // Ajuste de la posición de la celda a la izquierda
+                $this->pdf->SetX($margenOriginal); 
+                
+                // Incrementar el índice
+                $index++;
+            }
+        }
+        
         // if (!empty($datos['novedades_reportadas']) && is_array($datos['novedades_reportadas'])) {
         //     foreach ([$datos['novedades_reportadas'] ]as $row) {
         //         $this->pdf->SetX($margenOriginal);
@@ -1799,16 +1874,19 @@ if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
         $this->pdf->SetX($margenOriginal); 
 
         if (isset($acciones_correctivas) && is_array($acciones_correctivas)) {
-            
             // Definir los anchos de las columnas
             $colWidths = [20, 30, 40, 40, 50]; // Ajusta estos valores según el diseño
-            
+            $margenOriginal = 10;  // Margen izquierdo
+            $margenInferior = 15;  // Margen inferior
+            $alturaPiePagina = 20; // Altura estimada del pie de página
+        
+            $indextabla = 1; // Inicializar el índice de la tabla
+        
             // Inicializar la variable para la altura máxima
             $maxHeight = 0;
-        
+            
             foreach ($acciones_correctivas as $row) {
                 // Crear el array con los datos a mostrar
-                
                 $data = [
                     $indextabla,  // Columna índice
                     $row['txt_localidad'],  // Columna Titulo
@@ -1824,10 +1902,19 @@ if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
                     $lineCount = $this->pdf->GetStringWidth((string)$content) / $colWidths[$index];
                     $lineCount = ceil($lineCount); // Redondear hacia arriba
                     $cellHeight = $lineCount * 5; // Altura de línea (ajusta 5 según necesidad)
-                    $maxHeight = max($maxHeight, $cellHeight); 
+                    $maxHeight = max($maxHeight, $cellHeight);
                 }
         
                 $maxHeight = $maxHeight + 4; // Tomar la altura máxima
+                
+                // Verificar espacio disponible considerando el pie de página
+                $espacioDisponible = $this->pdf->GetPageHeight() - $this->pdf->GetY() - $margenInferior - $alturaPiePagina;
+                
+                // Si no hay suficiente espacio para la fila, agregar una nueva página
+                if ($maxHeight > $espacioDisponible) {
+                    $this->pdf->AddPage();
+                    $this->pdf->SetX($margenOriginal); // Ajustar la posición para la nueva página
+                }
         
                 // Dibujar las celdas de la fila con la misma altura máxima
                 foreach ($data as $index => $content) {
@@ -1848,10 +1935,10 @@ if (isset($cambio_nomina_personal) && is_array($cambio_nomina_personal)) {
                 $this->pdf->Ln($maxHeight);
                 $this->pdf->SetX($margenOriginal); // Ajustar la posición para la siguiente fila
         
-                $indextabla++;
+                $indextabla++; // Incrementar el índice de la tabla
             }
-           
         }
+        
         
 
         $this->pdf->Ln();
