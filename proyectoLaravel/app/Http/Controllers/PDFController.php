@@ -1962,7 +1962,7 @@ if (isset($reporte_custodia) && is_array($reporte_custodia)) {
         //     }
         //     }
 
-        if (isset($datos['valores_agregados']) && is_string($datos['valores_agregados'])) {
+        if (isset($datos['valores_agregados']) ) {
             // Convertir la cadena JSON en un array asociativo
             $valores_agregados = json_decode($datos['valores_agregados'], true);
         }

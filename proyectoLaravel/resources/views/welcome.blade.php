@@ -371,16 +371,22 @@ function obtenerPeriodo(fecha) {
         'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
     ];
 
-    const date = new Date(fecha);
+    // Convertir fecha a string si no lo es
+    const fechaString = new Date(fecha);
 
-    // Ajustar al primer día del mes
-    date.setDate(1);  // Establece el día al 1 de ese mes
+    // Obtener el año y mes de la fecha original
+    const anio = fechaString.getFullYear();
+    const mes = fechaString.getMonth();
 
-    const mes = meses[date.getMonth()+1];  // Obtiene el mes (0 - 11)
-    const anio = date.getFullYear();    // Obtiene el año
+    // Crear una nueva fecha ajustada al primer día del mes
+    const primerDia = new Date(anio, mes, 1);
 
-    return `${mes} ${anio}`;
+    // Obtener el nombre del mes
+    const mesNombre = meses[primerDia.getMonth()]; // Obtenemos el nombre del mes
+
+    return `${mesNombre} ${anio}`;
 }
+
 
 
 
@@ -424,8 +430,18 @@ function obtenerPeriodo(fecha) {
         const periodoControl = obtenerPeriodo(key.fecha);
         console.log("periodoControl",periodoControl);
         console.log("group.periodo",group.periodo);
+        return key.desc_cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
+    })) || '';
+
+    const accion= JSON.stringify(accionJSON.filter(key => {
+        console.log("key",key);
+        const periodoControl = obtenerPeriodo(key.fecha_incidente);
+        console.log("periodoControl",periodoControl);
+        console.log("group.periodo",group.periodo);
         return key.cliente === cliente && periodoControl === group.periodo;  // Comparar periodo
     })) || '';
+
+    console.log("accion", accion)
 
 
     const url = `/generar-pdf?${new URLSearchParams({
@@ -460,7 +476,7 @@ function obtenerPeriodo(fecha) {
         incidencia_seguridad: asegurarArray(group.incidencia_seguridad).join(','),
         novedades_reportadas: JSON.stringify([group]) || '',
         cambio_nomina_personal:nominas, 
-        acciones_correctivas: JSON.stringify(accionJSON.filter(key => key.cliente === cliente)) || '',
+        acciones_correctivas: accion,
         valores_agregados: valor,
         conclusion_recomendaciones: asegurarArray(group.conclusion_recomendaciones).join(','),
         recomendaciones: JSON.stringify(recomendacionesJSON.filter(recomendacion => recomendacion.cliente === cliente)) || '' // Se pasa el JSON de recomendaciones
